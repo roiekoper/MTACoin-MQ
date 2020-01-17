@@ -15,6 +15,16 @@
 #define NUM_OF_ZERO 16
 #define MAX_STRING_SIZE 256
 
+#define assert_if(errnum)      \
+    if (errnum != 0)           \
+    {                          \
+        printf("Error: %m\n"); \
+        exit(EXIT_FAILURE);    \
+    }
+
+#define POLICY_STR(policy) (policy == SCHED_FIFO) ? "SCHED_FIFO" : (policy == SCHED_RR) ? "SCHED_RR" : (policy == SCHED_OTHER) ? "SCHED_OTHER" : "???"
+
+
 unsigned long generateHashFromBlock(BLOCK_T *block);
 node_t *block_chain_head = NULL;
 int mask;

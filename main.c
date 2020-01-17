@@ -9,15 +9,6 @@
 #include "miner.h"
 #include "server.h"
 
-#define assert_if(errnum)      \
-    if (errnum != 0)           \
-    {                          \
-        printf("Error: %m\n"); \
-        exit(EXIT_FAILURE);    \
-    }
-
-#define POLICY_STR(policy) (policy == SCHED_FIFO) ? "SCHED_FIFO" : (policy == SCHED_RR) ? "SCHED_RR" : (policy == SCHED_OTHER) ? "SCHED_OTHER" : "???"
-
 // Functions Declaration
 void createThreads();
 

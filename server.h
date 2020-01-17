@@ -7,5 +7,6 @@
 
 void *server(void *pVoid);
 void generateInitBlock();
+int isLegalBlock(BLOCK_T *serverBlock);
 
 #endif //BITCOIN_SERVER_H

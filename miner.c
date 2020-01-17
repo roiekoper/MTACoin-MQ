@@ -44,27 +44,6 @@ void *miner(int *thread_id)
     }
 }
 
-void updateMinerBlock(BLOCK_T *minerBlock)
-{
-    minerBlock->nonce = rand();
-    minerBlock->timestamp = (int)time(NULL); // current time
-    minerBlock->hash = generateHashFromBlock(minerBlock);
-}
-
-BLOCK_T *generateMinerBlock(int relayed_by)
-{
-    BLOCK_T *new_block = malloc(sizeof(BLOCK_T));
-    new_block->height = block_chain_head->block->height + 1;
-    new_block->timestamp = (int)time(NULL);               // current time in seconds
-    new_block->relayed_by = relayed_by;                   // server id
-    new_block->nonce = 0;                                 // dummy nonce
-    new_block->prev_hash = block_chain_head->block->hash; // dummy prev hash
-    new_block->hash = -1;                                 // dummy hash
-    new_block->difficulty = NUM_OF_ZERO;
-
-    return new_block;
-}
-
 void *badMiner(int *thread_id)
 {
     BLOCK_T *minerBlock = NULL;
@@ -109,4 +88,25 @@ void *badMiner(int *thread_id)
             updateMinerBlock(minerBlock);
         }
     }
+}
+
+void updateMinerBlock(BLOCK_T *minerBlock)
+{
+    minerBlock->nonce = rand();
+    minerBlock->timestamp = (int)time(NULL); // current time
+    minerBlock->hash = generateHashFromBlock(minerBlock);
+}
+
+BLOCK_T *generateMinerBlock(int relayed_by)
+{
+    BLOCK_T *new_block = malloc(sizeof(BLOCK_T));
+    new_block->height = block_chain_head->block->height + 1;
+    new_block->timestamp = (int)time(NULL);               // current time in seconds
+    new_block->relayed_by = relayed_by;                   // server id
+    new_block->nonce = 0;                                 // dummy nonce
+    new_block->prev_hash = block_chain_head->block->hash; // dummy prev hash
+    new_block->hash = -1;                                 // dummy hash
+    new_block->difficulty = NUM_OF_ZERO;
+
+    return new_block;
 }
