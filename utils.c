@@ -1,4 +1,4 @@
-#include "common.h"
+#include "utils.h"
 
 unsigned long generateHashFromBlock(BLOCK_T *block)
 {
@@ -7,12 +7,6 @@ unsigned long generateHashFromBlock(BLOCK_T *block)
             block->timestamp, block->nonce, block->height,
             block->relayed_by, block->difficulty, block->prev_hash);
     return crc32(0, (const void *)block_to_string, (uInt)strlen(block_to_string));
-}
-
-void generateMask()
-{
-    int gen_mask = 0xffffffff;
-    mask = gen_mask << NUM_OF_ZERO;
 }
 
 void delete_list()

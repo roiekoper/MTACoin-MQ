@@ -1,9 +1,10 @@
 #ifndef BITCOIN_SERVER_H
 #define BITCOIN_SERVER_H
 
-#include "entities.h"
-#include "common.h"
-#include <pthread.h>
+#define _GNU_SOURCE
+#define _CRT_SECURE_NO_WARNINGS
+
+#include "utils.h"
 
 void *server(void *pVoid);
 void generateInitBlock();

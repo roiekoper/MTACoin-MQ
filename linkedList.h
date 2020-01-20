@@ -1,5 +1,7 @@
 #ifndef LINKED_LIST_H_
 #define LINKED_LIST_H_
+
+#define _GNU_SOURCE
 #define _CRT_SECURE_NO_WARNINGS
 
 #include "entities.h"
