@@ -4,7 +4,6 @@
 #define _GNU_SOURCE
 #define _CRT_SECURE_NO_WARNINGS
 
-#include "entities.h"
 #include "server.h"
 #include "miner.h"
 

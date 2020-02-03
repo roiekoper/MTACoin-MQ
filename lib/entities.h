@@ -6,7 +6,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "entities.h"
 #include <string.h>
 #include <zlib.h> // for crc32 method
 #include <pthread.h>

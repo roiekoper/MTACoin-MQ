@@ -1,4 +1,4 @@
-#include "blockChain.h"
+#include "lib/blockChain.h"
 
 int main()
 {
