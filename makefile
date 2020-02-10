@@ -75,4 +75,4 @@ $(SO_DIR)/$(BLOCK_CHAIN).so: $(LIB)/$(BLOCK_CHAIN).c
 	$(CC) $(CFLAGS) $(LIBS_PATH) $^ -o $(subst $(BLOCK_CHAIN),lib$(BLOCK_CHAIN),$@) -l$(SERVER) -l$(MINER)
 
 $(O_DIR)/$(MAIN).o: $(MAIN).c
-	$(CC) -v $(LIBS_PATH) $^ -o $@ -l$(BLOCK_CHAIN)
+	$(CC) -v $(LIBS_PATH) $^ -o $(subst $(MAIN),lib$(MAIN),$@) -l$(BLOCK_CHAIN) -l$(SERVER) -l$(MINER)
