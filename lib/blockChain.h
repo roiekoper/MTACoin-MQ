@@ -4,8 +4,9 @@
 #define _GNU_SOURCE
 #define _CRT_SECURE_NO_WARNINGS
 
-#include "server.h"
-#include "miner.h"
+#include "entities.h"
+#include "../server.h"
+#include "../miner.h"
 
 void startBlockChainMQ();
 void generateMask();
