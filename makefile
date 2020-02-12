@@ -2,7 +2,7 @@ CC = gcc
 PWD = $(shell pwd)
 LIBS_PATH = -L$(PWD)/$(SO_DIR)
 CFLAGS = -shared -fPIC
-SO_LIBS = -lpthread -lz
+SO_LIBS = -lpthread -lz -lrt
 
  
 #folders path
@@ -26,21 +26,21 @@ LS_SO := $(addprefix $(SO_DIR)/,$(patsubst %.c,%.so,$(subst $(DELETE_LIB),,$(she
 UTILS_SO := $(addprefix $(SO_DIR)/,$(patsubst %.c,%.so,$(subst $(DELETE_LIB),,$(shell find . -name "$(UTILS).c"))))
 #UTILS_SO := $(patsubst %.c,%.so,$(subst $(DELETE_LIB),,$(shell find . -name "$(UTILS).c")))
 
-SERVER_SO := $(addprefix $(SO_DIR)/,$(patsubst %.c,%.so,$(subst $(DELETE_LIB),,$(shell find . -name "$(SERVER).c"))))
-#SERVER_SO := $(patsubst %.c,%.so,$(subst $(DELETE_LIB),,$(shell find . -name "$(SERVER).c")))
-
-MINER_SO := $(addprefix $(SO_DIR)/,$(patsubst %.c,%.so,$(subst $(DELETE_LIB),,$(shell find . -name "$(MINER).c"))))
-#MINER_SO := $(patsubst %.c,%.so,$(subst $(DELETE_LIB),,$(shell find . -name "$(MINER).c")))
-
 BLOCK_CHAIN_SO := $(addprefix $(SO_DIR)/,$(patsubst %.c,%.so,$(subst $(DELETE_LIB),,$(shell find . -name "$(BLOCK_CHAIN).c"))))
 #BLOCK_CHAIN_SO := $(patsubst %.c,%.so,$(subst $(DELETE_LIB),,$(shell find . -name "$(BLOCK_CHAIN).c")))
 
-MAIN_O := $(addprefix $(O_DIR)/,$(patsubst %.c,%.o,$(subst ./,,$(shell find . -name "$(MAIN).c"))))
+MAIN_O := $(addprefix $(O_DIR)/,$(patsubst %.c,%.out,$(subst ./,,$(shell find . -name "$(MAIN).c"))))
+#MAIN_O := $(patsubst %.c,%.o,$(subst ./,,$(shell find . -name "$(MAIN).c")))
+
+SERVER_O := $(addprefix $(O_DIR)/,$(patsubst %.c,%.out,$(subst ./,,$(shell find . -name "$(SERVER).c"))))
+#MAIN_O := $(patsubst %.c,%.o,$(subst ./,,$(shell find . -name "$(MAIN).c")))
+
+MINER_O := $(addprefix $(O_DIR)/,$(patsubst %.c,%.out,$(subst ./,,$(shell find . -name "$(MINER).c"))))
 #MAIN_O := $(patsubst %.c,%.o,$(subst ./,,$(shell find . -name "$(MAIN).c")))
 
 
 
-all: $(LS_SO) $(UTILS_SO) $(SERVER_SO) $(MINER_SO) $(BLOCK_CHAIN_SO) $(MAIN_O)
+all: $(SERVER_O) $(MINER_O) $(MAIN_O)
     #@echo SRCS: $(SRCS)
     #@echo OBJS: $(OBJS)
 
@@ -74,5 +74,11 @@ $(SO_DIR)/$(MINER).so: $(LIB)/$(MINER).c
 $(SO_DIR)/$(BLOCK_CHAIN).so: $(LIB)/$(BLOCK_CHAIN).c
 	$(CC) $(CFLAGS) $(LIBS_PATH) $^ -o $(subst $(BLOCK_CHAIN),lib$(BLOCK_CHAIN),$@) -l$(SERVER) -l$(MINER)
 
-$(O_DIR)/$(MAIN).o: $(MAIN).c
-	$(CC) -v $(LIBS_PATH) $^ -o $(subst $(MAIN),lib$(MAIN),$@) -l$(BLOCK_CHAIN) -l$(SERVER) -l$(MINER)
+$(MAIN_O).out: $(MAIN).c
+	$(CC) $^ -o $@ $(SO_LIBS)
+
+$(SERVER_O).out: $(SERVER).c
+	$(CC) $^ -o $@ $(SO_LIBS)
+
+$(MINER_O).out: $(MINER).c
+	$(CC) $^ -o $@ $(SO_LIBS)

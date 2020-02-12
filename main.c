@@ -2,8 +2,8 @@
 
 #include <stdio.h>
 #include <unistd.h>
-//#include <mqueue.h>
-#include <sys/fcntl.h>
+#include <mqueue.h>
+//#include <sys/fcntl.h>
 
 // ------- mq_ipc_vfork_include
 
