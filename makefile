@@ -1,6 +1,6 @@
 CC = gcc
 PWD = $(shell pwd)
-LIBS_PATH = -L$(PWD)/$(SO_DIR)
+LIBS_PATH = $(PWD)/$(SO_DIR)
 CFLAGS = -shared -fPIC
 SO_LIBS = -lpthread -lz -lrt
 
@@ -36,7 +36,7 @@ SERVER_O := $(addprefix $(O_DIR)/,$(patsubst %.c,%.out,$(subst ./,,$(shell find 
 
 MINER_O := $(addprefix $(O_DIR)/,$(patsubst %.c,%.out,$(subst ./,,$(shell find . -name "$(MINER).c"))))
 
-all: $(SERVER_O) $(MINER_O) $(MAIN_O)
+all: $(LS) $(UTILS) $(SERVER_O) $(MINER_O) $(MAIN_O)
     #@echo SRCS: $(SRCS)
     #@echo OBJS: $(OBJS)
 
@@ -58,16 +58,10 @@ $(SO_DIR)/$(LS).so: $(LIB)/$(LS).c
 	#mkdir -p $(O_DIR)
 	mkdir -p $(SO_DIR)
 	$(CC) $(CFLAGS) $^ -o $(subst $(LS),lib$(LS),$@) $(SO_LIBS)
-	export LD_LIBRARY_PATH=$(PWD)
+	export LD_LIBRARY_PATH=$(LIBS_PATH)
 
 $(SO_DIR)/$(UTILS).so: $(LIB)/$(UTILS).c
-	$(CC) $(CFLAGS) $(LIBS_PATH) $^ -o $(subst $(UTILS),lib$(UTILS),$@) -lz  -l$(LS)
-
-$(SO_DIR)/$(SERVER).so: $(LIB)/$(SERVER).c
-	$(CC) $(CFLAGS) $(LIBS_PATH) $^ -o $(subst $(SERVER),lib$(SERVER),$@) -l$(UTILS) -l$(LS)
-
-$(SO_DIR)/$(MINER).so: $(LIB)/$(MINER).c
-	$(CC) $(CFLAGS) $(LIBS_PATH) $^ -o $(subst $(MINER),lib$(MINER),$@) -l$(UTILS) -l$(LS)
+	$(CC) $(CFLAGS) -L$(LIBS_PATH) $^ -o $(subst $(UTILS),lib$(UTILS),$@) $(SO_LIBS) -l$(LS)
 
 $(SO_DIR)/$(BLOCK_CHAIN).so: $(LIB)/$(BLOCK_CHAIN).c
 	$(CC) $(CFLAGS) $(LIBS_PATH) $^ -o $(subst $(BLOCK_CHAIN),lib$(BLOCK_CHAIN),$@) -l$(SERVER) -l$(MINER)
@@ -76,8 +70,7 @@ $(O_DIR)/$(MAIN).out: $(MAIN).c
 	$(CC) $^ -o $@ $(SO_LIBS)
 
 $(O_DIR)/$(SERVER).out: $(SERVER).c
-	mkdir -p $(O_DIR)
-	$(CC) $^ -o $@ $(SO_LIBS)
+	$(CC) -L$(LIBS_PATH) $^ -o $@ $(SO_LIBS) -l$(UTILS)
 
 $(O_DIR)/$(MINER).out: $(MINER).c
-	$(CC) $^ -o $@ $(SO_LIBS)
+	$(CC) -L$(LIBS_PATH) $^ -o $@ $(SO_LIBS) -l$(UTILS)
