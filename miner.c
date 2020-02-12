@@ -1,11 +1,14 @@
 #include "miner.h"
-#include "stdio.h"
 
 void main(){
     float counter = 0;
     struct mq_attr mqAttr = {0};
+    BLOCK_T *minerBlock = NULL;
+    BLOCK_T *newBlock = NULL;
+    MSG_T* msg;
 
     mqd_t mq = mq_open(MQ_NAME, O_WRONLY);
+
 
     for(;;)
     {
@@ -17,31 +20,50 @@ void main(){
         }
         else
         {
-            counter += 0.5;
-            MSG_T* msg;
+            printf("Miner %d: generate miner block\n", *thread_id);
+            minerBlock = generateMinerBlock(*thread_id); //get the new block
 
-            // Precise allocation should be done according to the type
-            // It is also possible to allocate a big buffer(see reader)
-            if (counter == (unsigned int)counter)	// if integer use UINT_MSG_DATA_T
+            if ((minerBlock->hash & mask) == 0)
             {
-                msg = malloc(sizeof(MSG_T) + sizeof(UINT_MSG_DATA_T));
-                msg->type = UINT;
-                ((UINT_MSG_DATA_T*)msg->data)->uvalue = (unsigned int)counter;
+                newBlock = minerBlock;
+                           minerBlock->height,
+                           (unsigned int)minerBlock->hash);
+                msg = malloc(sizeof(MSG_T));
+                (msg->block) = newBlock;
+                mq_send(mq, (char*)msg, MQ_MAX_MSG_SIZE, 0);
+                printf("Miner #%d: Mined a new block #%d, with the hash 0x%08x\n", minerBlock->relayed_by,
             }
-            else 									// if float use FLOAT_MSG_DATA_T
+            else
             {
-                msg = malloc(sizeof(MSG_T) + sizeof(FLOAT_MSG_DATA_T));
-                msg->type = FLOAT;
-                ((FLOAT_MSG_DATA_T*)msg->data)->fvalue = counter;
+                updateMinerBlock(minerBlock);
             }
-
-            mq_send(mq, (char*)msg, MQ_MAX_MSG_SIZE, 0);
-            printf("Writer: %.1f\n", counter);
 
             free(msg);
         }
     }
 }
+
+void updateMinerBlock(BLOCK_T *minerBlock)
+{
+    minerBlock->nonce = rand();
+    minerBlock->timestamp = (int)time(NULL); // current time
+    minerBlock->hash = generateHashFromBlock(minerBlock);
+}
+
+BLOCK_T *generateMinerBlock(int relayed_by)
+{
+    BLOCK_T *new_block = malloc(sizeof(BLOCK_T));
+    new_block->height = block_chain_head->block->height + 1;
+    new_block->timestamp = (int)time(NULL);               // current time in seconds
+    new_block->relayed_by = relayed_by;                   // server id
+    new_block->nonce = 0;                                 // dummy nonce
+    new_block->prev_hash = block_chain_head->block->hash; // dummy prev hash
+    new_block->hash = -1;                                 // dummy hash
+    new_block->difficulty = NUM_OF_ZERO;
+
+    return new_block;
+}
+
 
 //void *miner(int *thread_id)
 //{
@@ -133,23 +155,3 @@ void main(){
 //    }
 //}
 //
-//void updateMinerBlock(BLOCK_T *minerBlock)
-//{
-//    minerBlock->nonce = rand();
-//    minerBlock->timestamp = (int)time(NULL); // current time
-//    minerBlock->hash = generateHashFromBlock(minerBlock);
-//}
-//
-//BLOCK_T *generateMinerBlock(int relayed_by)
-//{
-//    BLOCK_T *new_block = malloc(sizeof(BLOCK_T));
-//    new_block->height = block_chain_head->block->height + 1;
-//    new_block->timestamp = (int)time(NULL);               // current time in seconds
-//    new_block->relayed_by = relayed_by;                   // server id
-//    new_block->nonce = 0;                                 // dummy nonce
-//    new_block->prev_hash = block_chain_head->block->hash; // dummy prev hash
-//    new_block->hash = -1;                                 // dummy hash
-//    new_block->difficulty = NUM_OF_ZERO;
-//
-//    return new_block;
-//}
