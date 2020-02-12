@@ -53,8 +53,8 @@ int main()
     wpid = vfork();
     if (wpid == 0) //Writer
     {
-        char *argv[] = {"./server.out", 0};
-        execv("./server.out", argv);
+        char *argv[] = {"./build/server.out", 0};
+        execv("./build/server.out", argv);
     }
 
     /* Create reader process */
@@ -63,8 +63,8 @@ int main()
         rpid[i] = vfork();
         if(rpid[i] == 0) //Reader
         {
-            char *argv[] = {"./miner.out", 0};
-            execv("./miner.out", argv);
+            char *argv[] = {"./build/miner.out", 0};
+            execv("./build/miner.out", argv);
         }
     }
 
