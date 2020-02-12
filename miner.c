@@ -113,4 +113,4 @@ int main(){
 //    new_block->difficulty = NUM_OF_ZERO;
 //
 //    return new_block;
-}
+//}

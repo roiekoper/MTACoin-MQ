@@ -33,12 +33,8 @@ MAIN_O := $(addprefix $(O_DIR)/,$(patsubst %.c,%.out,$(subst ./,,$(shell find . 
 #MAIN_O := $(patsubst %.c,%.o,$(subst ./,,$(shell find . -name "$(MAIN).c")))
 
 SERVER_O := $(addprefix $(O_DIR)/,$(patsubst %.c,%.out,$(subst ./,,$(shell find . -name "$(SERVER).c"))))
-#MAIN_O := $(patsubst %.c,%.o,$(subst ./,,$(shell find . -name "$(MAIN).c")))
 
 MINER_O := $(addprefix $(O_DIR)/,$(patsubst %.c,%.out,$(subst ./,,$(shell find . -name "$(MINER).c"))))
-#MAIN_O := $(patsubst %.c,%.o,$(subst ./,,$(shell find . -name "$(MAIN).c")))
-
-
 
 all: $(SERVER_O) $(MINER_O) $(MAIN_O)
     #@echo SRCS: $(SRCS)
@@ -52,6 +48,8 @@ print:
 	@echo SERVER_SO: $(SERVER_SO)
 	@echo BLOCK_CHAIN_SO: $(BLOCK_CHAIN_SO)
 	@echo MAIN_O: $(MAIN_O)
+	@echo SERVER_O: $(SERVER_O)
+	@echo MINER_O: $(MINER_O)
 
 run:
 	./$(MAIN_O)
@@ -74,11 +72,12 @@ $(SO_DIR)/$(MINER).so: $(LIB)/$(MINER).c
 $(SO_DIR)/$(BLOCK_CHAIN).so: $(LIB)/$(BLOCK_CHAIN).c
 	$(CC) $(CFLAGS) $(LIBS_PATH) $^ -o $(subst $(BLOCK_CHAIN),lib$(BLOCK_CHAIN),$@) -l$(SERVER) -l$(MINER)
 
-$(MAIN_O).out: $(MAIN).c
+$(O_DIR)/$(MAIN).out: $(MAIN).c
 	$(CC) $^ -o $@ $(SO_LIBS)
 
-$(SERVER_O).out: $(SERVER).c
+$(O_DIR)/$(SERVER).out: $(SERVER).c
+	mkdir -p $(O_DIR)
 	$(CC) $^ -o $@ $(SO_LIBS)
 
-$(MINER_O).out: $(MINER).c
+$(O_DIR)/$(MINER).out: $(MINER).c
 	$(CC) $^ -o $@ $(SO_LIBS)
