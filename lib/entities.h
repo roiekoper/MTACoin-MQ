@@ -55,11 +55,6 @@ pthread_cond_t new_block_cond;
 #define MQ_NAME             "/my_mq"
 #define MQ_SERVER_NAME      "/server_mq"
 
-typedef enum{
-    FLOAT,
-    UINT
-} NUMBER_TYPE_E;
-
 /* Data that will be passed from the Writer to the reader
 should hold the actual application data */
 typedef struct msg{
