@@ -4,6 +4,7 @@
 #define _GNU_SOURCE
 #define _CRT_SECURE_NO_WARNINGS
 
+#include "lib/entities.h"
 #include "lib/utils.h"
 
 //void *server(void *pVoid);
