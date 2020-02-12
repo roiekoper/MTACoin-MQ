@@ -1,9 +1,8 @@
 #include "miner.h"
 #include "stdio.h"
 
-int main(){
+void main(){
     printf("I'm fucking miner");
-    return 0;
 }
 
 //void *miner(int *thread_id)

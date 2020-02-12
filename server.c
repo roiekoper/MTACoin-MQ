@@ -1,9 +1,8 @@
 #include "server.h"
 #include "stdio.h"
 
-int main(){
+void main(){
     printf("I'm fucking server");
-    return 0;
 }
 
 //void *server(void *pVoid)
