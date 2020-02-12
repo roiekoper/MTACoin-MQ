@@ -2,43 +2,29 @@
 #include "stdio.h"
 
 void main(){
-    float counter = 0;
+    MSG_T* msg = malloc(MQ_MAX_MSG_SIZE); // Allocate big size in advance
     struct mq_attr mqAttr = {0};
 
-    mqd_t mq = mq_open(MQ_NAME, O_WRONLY);
+    mqd_t mq = mq_open(MQ_NAME, O_RDONLY);
 
     for(;;)
     {
-        /* Check if there is place in the Q, if yes increment send, if no print error and try again */
+        /* Receive msg */
+        mq_receive(mq, (char*)msg, MQ_MAX_MSG_SIZE, NULL);
+
+        /* Get attr for getting number of msgs currently in the Q*/
         mq_getattr(mq, &mqAttr);
-        if (mqAttr.mq_curmsgs == MQ_MAX_SIZE)
+
+        // Cast to concrete type
+        if (msg->type == UINT)
         {
-            printf("Queue(%d) reached max number of messages(%ld)\n", mq, mqAttr.mq_maxmsg);
+            unsigned int ucounter = ((UINT_MSG_DATA_T*)msg->data)->uvalue;
+            printf("Reader(#%u): %u(remaining %ld messags in queue)\n", getpid(), ucounter, mqAttr.mq_curmsgs);
         }
         else
         {
-            counter += 0.5;
-            MSG_T* msg;
-
-            // Precise allocation should be done according to the type
-            // It is also possible to allocate a big buffer(see reader)
-            if (counter == (unsigned int)counter)	// if integer use UINT_MSG_DATA_T
-            {
-                msg = malloc(sizeof(MSG_T) + sizeof(UINT_MSG_DATA_T));
-                msg->type = UINT;
-                ((UINT_MSG_DATA_T*)msg->data)->uvalue = (unsigned int)counter;
-            }
-            else 									// if float use FLOAT_MSG_DATA_T
-            {
-                msg = malloc(sizeof(MSG_T) + sizeof(FLOAT_MSG_DATA_T));
-                msg->type = FLOAT;
-                ((FLOAT_MSG_DATA_T*)msg->data)->fvalue = counter;
-            }
-
-            mq_send(mq, (char*)msg, MQ_MAX_MSG_SIZE, 0);
-            printf("Writer: %.1f\n", counter);
-
-            free(msg);
+            float fcounter = ((FLOAT_MSG_DATA_T*)msg->data)->fvalue;
+            printf("Reader(#%u): %.1f(remaining %ld messags in queue)\n", getpid(), fcounter, mqAttr.mq_curmsgs);
         }
     }
 }
