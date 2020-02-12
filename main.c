@@ -53,8 +53,8 @@ int main()
     wpid = vfork();
     if (wpid == 0) //Writer
     {
-        char *argv[] = {"./mq_ipc_vfork_writer.out", 0};
-        execv("./mq_ipc_vfork_writer.out", argv);
+        char *argv[] = {"./server.out", 0};
+        execv("./server.out", argv);
     }
 
     /* Create reader process */
@@ -63,8 +63,8 @@ int main()
         rpid[i] = vfork();
         if(rpid[i] == 0) //Reader
         {
-            char *argv[] = {"./mq_ipc_vfork_reader.out", 0};
-            execv("./mq_ipc_vfork_reader.out", argv);
+            char *argv[] = {"./miner.out", 0};
+            execv("./miner.out", argv);
         }
     }
 

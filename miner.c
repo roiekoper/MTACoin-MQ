@@ -1,6 +1,8 @@
 #include "miner.h"
+#include "stdio.h"
 
 int main(){
+    printf("I'm fucking miner");
     return 0;
 }
 
