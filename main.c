@@ -7,16 +7,25 @@
 int main()
 {
     mqd_t mq;
+    mqd_t mq_server;
     pthread_t wpid, rpid[NUM_OF_MINER];
     struct mq_attr attr = {0};
+    struct mq_attr attr_server = {0};
 
     /* initialize the queue attributes */
     attr.mq_maxmsg = MQ_MAX_SIZE;
     attr.mq_msgsize = MQ_MAX_MSG_SIZE;
+    attr_server.mq_maxmsg = MQ_MAX_SIZE;
+    attr_server.mq_msgsize = MQ_MAX_MSG_SIZE;
 
     /* create the message queue and close(not delete) it immidiatly as it will be used only by children */
     mq_unlink(MQ_NAME); // delete first if already exists, this requires sudo privilege
     mq = mq_open(MQ_NAME, O_CREAT, S_IRWXU | S_IRWXG, &attr);
+
+    mq_unlink(MQ_SERVER_NAME);
+    mq = mq_open(MQ_SERVER_NAME, O_CREAT, S_IRWXU | S_IRWXG, &attr_server);
+
+    
 
     /* create writer process */
     wpid = vfork();

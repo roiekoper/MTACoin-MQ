@@ -53,6 +53,7 @@ pthread_cond_t new_block_cond;
 #define MQ_MAX_SIZE         10
 #define MQ_MAX_MSG_SIZE     100 		//Some big value(in bytes)
 #define MQ_NAME             "/my_mq"
+#define MQ_SERVER_NAME      "/server_mq"
 
 typedef enum{
     FLOAT,
