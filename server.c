@@ -1,5 +1,4 @@
 #include "server.h"
-#include "stdio.h"
 
 void main(){
     float counter = 0;
@@ -20,7 +19,7 @@ void main(){
         /* Get attr for getting number of msgs currently in the Q*/
         mq_getattr(mq, &mqAttr);
 
-        print_block(mq->block);
+        print_block(msg->block);
         // Cast to concrete type
     }
 }

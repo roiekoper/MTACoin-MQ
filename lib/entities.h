@@ -10,6 +10,8 @@
 #include <zlib.h> // for crc32 method
 #include <pthread.h>
 #include <time.h>
+#include <unistd.h>
+#include <mqueue.h>
 
 #define NUM_OF_MINER 5
 #define NUM_OF_GOOD_MINER 4
@@ -48,20 +50,16 @@ int indices[NUM_OF_MINER];
 pthread_mutex_t chain_lock;
 pthread_cond_t new_block_cond;
 
-#endif
-
 #define MQ_MAX_SIZE         10
 #define MQ_MAX_MSG_SIZE     100 		//Some big value(in bytes)
 #define MQ_NAME             "/my_mq"
 #define MQ_SERVER_NAME      "/server_mq"
 
-typedef enum{
-    FLOAT,
-    UINT
-} NUMBER_TYPE_E;
 
 /* Data that will be passed from the Writer to the reader
 should hold the actual application data */
 typedef struct msg{
     BLOCK_T *block;
 }MSG_T;
+
+#endif

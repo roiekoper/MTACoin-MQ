@@ -20,18 +20,18 @@ void main(){
         }
         else
         {
-            printf("Miner %d: generate miner block\n", *thread_id);
-            minerBlock = generateMinerBlock(*thread_id); //get the new block
+            printf("Miner %d: generate miner block\n", getpid());
+            minerBlock = generateMinerBlock(getpid()); //get the new block
 
             if ((minerBlock->hash & mask) == 0)
             {
                 newBlock = minerBlock;
-                           minerBlock->height,
-                           (unsigned int)minerBlock->hash);
+                printf("Miner #%d: Mined a new block #%d, with the hash 0x%08x\n", minerBlock->relayed_by,
+                        minerBlock->height,
+                        (unsigned int)minerBlock->hash);
                 msg = malloc(sizeof(MSG_T));
                 (msg->block) = newBlock;
                 mq_send(mq, (char*)msg, MQ_MAX_MSG_SIZE, 0);
-                printf("Miner #%d: Mined a new block #%d, with the hash 0x%08x\n", minerBlock->relayed_by,
             }
             else
             {
@@ -65,7 +65,7 @@ BLOCK_T *generateMinerBlock(int relayed_by)
 }
 
 
-//void *miner(int *thread_id)
+//void *miner(int * )
 //{
 //    BLOCK_T *minerBlock = NULL;
 //    int policy = -1;
