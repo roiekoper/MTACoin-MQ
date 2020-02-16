@@ -1,4 +1,5 @@
 CC = gcc
+CC_EXPORT = LD_LIBRARY_PATH=$(LIBS_PATH) $(CC)
 PWD = $(shell pwd)
 LIBS_PATH = $(PWD)/$(SO_DIR)
 CFLAGS = -shared -fPIC
@@ -48,6 +49,7 @@ print:
 	@echo MAIN_O: $(MAIN_O)
 	@echo SERVER_O: $(SERVER_O)
 	@echo MINER_O: $(MINER_O)
+	@echo export: export LD_LIBRARY_PATH=$(LIBS_PATH)
 	@echo MAIN-RUN-COMMAND: $(CC) -L$(LIBS_PATH) $^ -o $@ $(SO_LIBS) -l$(UTILS)
 
 run:
@@ -57,7 +59,6 @@ $(SO_DIR)/$(LS).so: $(LIB)/$(LS).c
 	#mkdir -p $(O_DIR)
 	mkdir -p $(SO_DIR)
 	$(CC) $(CFLAGS) $^ -o $(subst $(LS),lib$(LS),$@) $(SO_LIBS)
-	export LD_LIBRARY_PATH=$(LIBS_PATH)
 
 $(SO_DIR)/$(UTILS).so: $(LIB)/$(UTILS).c
 	$(CC) $(CFLAGS) -L$(LIBS_PATH) $^ -o $(subst $(UTILS),lib$(UTILS),$@) $(SO_LIBS) -l$(LS)
@@ -66,10 +67,10 @@ $(SO_DIR)/$(BLOCK_CHAIN).so: $(LIB)/$(BLOCK_CHAIN).c
 	$(CC) $(CFLAGS) $(LIBS_PATH) $^ -o $(subst $(BLOCK_CHAIN),lib$(BLOCK_CHAIN),$@) -l$(SERVER) -l$(MINER)
 
 $(O_DIR)/$(MAIN).out: $(MAIN).c
-	$(CC) -L$(LIBS_PATH) $^ -o $@ $(SO_LIBS) -l$(UTILS)
+	$(CC_EXPORT) -L$(LIBS_PATH) $^ -o $@ $(SO_LIBS) -l$(UTILS)
 
 $(O_DIR)/$(SERVER).out: $(SERVER).c
-	$(CC) -L$(LIBS_PATH) $^ -o $@ $(SO_LIBS) -l$(UTILS)
+	$(CC_EXPORT) -L$(LIBS_PATH) $^ -o $@ $(SO_LIBS) -l$(UTILS)
 
 $(O_DIR)/$(MINER).out: $(MINER).c
-	$(CC) -L$(LIBS_PATH) $^ -o $@ $(SO_LIBS) -l$(UTILS)
+	$(CC_EXPORT) -L$(LIBS_PATH) $^ -o $@ $(SO_LIBS) -l$(UTILS)
