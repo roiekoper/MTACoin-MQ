@@ -71,7 +71,7 @@ void createServerBlocksMessageQues() {
 
     /* create the message queue and close(not delete) it immidiatly as it will be used only by children */
     mq_unlink(MQ_SERVER_NAME); // delete first if already exists, this requires sudo privilege
-    mq = mq_open(MQ_SERVER_NAME, O_CREAT, S_IRWXU | S_IRWXG, &attr);
+    mq_server = mq_open(MQ_SERVER_NAME, O_CREAT, S_IRWXU | S_IRWXG, &attr);
 }
 
 //void *server(void *pVoid)
