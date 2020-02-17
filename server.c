@@ -13,7 +13,7 @@ void main() {
 
     // open chanel with each miner
     for(int i = 0; i < NUM_OF_MINER; i++){
-        miners_que_names[i] = sprintf(miners_que_names[i], MQ_MINERS_TEMPLATE_NAME, i);
+        sprintf(miners_que_names[i], MQ_MINERS_TEMPLATE_NAME, i);
         miners_mq[i] = mq_open(miners_que_names[i], O_RDONLY);
     }
 
@@ -30,14 +30,14 @@ void main() {
             if (msg->type == CONNECTION_REQUEST)
             {
                 unsigned int miner_id = ((CONNECTION_REQUEST_MESSAGE*)msg->data)->id;
-                String miner_que_name = ((CONNECTION_REQUEST_MESSAGE*)msg->data)->que_name;
+                char* miner_que_name = ((CONNECTION_REQUEST_MESSAGE*)msg->data)->que_name;
                 printf("Received connection request from miner id %d, queue name %s\n", miner_id, miner_que_name );
                 printf("MINER QUE ID(#%u): remaining %ld messages in queue\n", miner_id, mqMinersAttr.mq_curmsgs);
             }
             else
             {
-                Block minerBlockReceived = ((BLOCK_MESSAGE*)msg->data)->block;
-                print_block(&minerBlockReceived);
+                BLOCK_T *minerBlockReceived = ((BLOCK_MESSAGE*)msg->data)->block;
+                print_block(minerBlockReceived);
                 printf("MINER QUE ID(#%u): remaining %ld messages in queue\n", i, mqMinersAttr.mq_curmsgs);
             }
         }
