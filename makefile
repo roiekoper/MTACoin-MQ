@@ -18,7 +18,7 @@ UTILS = utils
 SERVER = server
 MINER = miner
 BLOCK_CHAIN = blockChain
-MAIN = main
+LAUNCHER = launcher
 
 
 LS_SO := $(addprefix $(SO_DIR)/,$(patsubst %.c,%.so,$(subst $(DELETE_LIB),,$(shell find . -name "$(LS).c"))))
@@ -30,14 +30,14 @@ UTILS_SO := $(addprefix $(SO_DIR)/,$(patsubst %.c,%.so,$(subst $(DELETE_LIB),,$(
 BLOCK_CHAIN_SO := $(addprefix $(SO_DIR)/,$(patsubst %.c,%.so,$(subst $(DELETE_LIB),,$(shell find . -name "$(BLOCK_CHAIN).c"))))
 #BLOCK_CHAIN_SO := $(patsubst %.c,%.so,$(subst $(DELETE_LIB),,$(shell find . -name "$(BLOCK_CHAIN).c")))
 
-MAIN_O := $(addprefix $(O_DIR)/,$(patsubst %.c,%.out,$(subst ./,,$(shell find . -name "$(MAIN).c"))))
-#MAIN_O := $(patsubst %.c,%.o,$(subst ./,,$(shell find . -name "$(MAIN).c")))
+LAUNCHER_O := $(addprefix $(O_DIR)/,$(patsubst %.c,%.out,$(subst ./,,$(shell find . -name "$(LAUNCHER).c"))))
+#LAUNCHER_O := $(patsubst %.c,%.o,$(subst ./,,$(shell find . -name "$(LAUNCHER).c")))
 
 SERVER_O := $(addprefix $(O_DIR)/,$(patsubst %.c,%.out,$(subst ./,,$(shell find . -name "$(SERVER).c"))))
 
 MINER_O := $(addprefix $(O_DIR)/,$(patsubst %.c,%.out,$(subst ./,,$(shell find . -name "$(MINER).c"))))
 
-all: $(LS_SO) $(UTILS_SO) $(SERVER_O) $(MINER_O) $(MAIN_O)
+all: $(LS_SO) $(UTILS_SO) $(SERVER_O) $(MINER_O) $(LAUNCHER_O)
     #@echo SRCS: $(SRCS)
     #@echo OBJS: $(OBJS)
 
@@ -46,14 +46,14 @@ print:
 	@echo LS_SO: $(LS_SO)
 	@echo SERVER_SO: $(SERVER_SO)
 	@echo BLOCK_CHAIN_SO: $(BLOCK_CHAIN_SO)
-	@echo MAIN_O: $(MAIN_O)
+	@echo LAUNCHER_O: $(LAUNCHER_O)
 	@echo SERVER_O: $(SERVER_O)
 	@echo MINER_O: $(MINER_O)
 	@echo export: export LD_LIBRARY_PATH=$(LIBS_PATH)
-	@echo MAIN-RUN-COMMAND: $(CC) -L$(LIBS_PATH) $^ -o $@ $(SO_LIBS) -l$(UTILS)
+	@echo LAUNCHER-RUN-COMMAND: $(CC) -L$(LIBS_PATH) $^ -o $@ $(SO_LIBS) -l$(UTILS)
 
 run:
-	./$(MAIN_O)
+	./$(LAUNCHER_O)
 
 $(SO_DIR)/$(LS).so: $(LIB)/$(LS).c
 	#mkdir -p $(O_DIR)
@@ -66,7 +66,7 @@ $(SO_DIR)/$(UTILS).so: $(LIB)/$(UTILS).c
 $(SO_DIR)/$(BLOCK_CHAIN).so: $(LIB)/$(BLOCK_CHAIN).c
 	$(CC) $(CFLAGS) $(LIBS_PATH) $^ -o $(subst $(BLOCK_CHAIN),lib$(BLOCK_CHAIN),$@) -l$(SERVER) -l$(MINER)
 
-$(O_DIR)/$(MAIN).out: $(MAIN).c
+$(O_DIR)/$(LAUNCHER).out: $(LAUNCHER).c
 	$(CC_EXPORT) -L$(LIBS_PATH) $^ -o $@ $(SO_LIBS) -l$(UTILS)
 
 $(O_DIR)/$(SERVER).out: $(SERVER).c

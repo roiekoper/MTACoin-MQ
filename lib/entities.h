@@ -13,7 +13,7 @@
 #include <unistd.h>
 #include <mqueue.h>
 
-#define NUM_OF_MINER 5
+#define NUM_OF_MINER 4
 #define NUM_OF_GOOD_MINER 4
 
 #define assert_if(errnum)      \
@@ -52,7 +52,7 @@ pthread_cond_t new_block_cond;
 
 #define MQ_MAX_SIZE         10
 #define MQ_MAX_MSG_SIZE     100 		//Some big value(in bytes)
-#define MQ_NAME             "/my_mq"
+#define MQ__MINERS_NAME             "/my_mq"
 #define MQ_SERVER_NAME      "/server_mq"
 
 

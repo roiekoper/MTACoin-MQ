@@ -9,7 +9,7 @@ void main(){
     MSG_T* msg = malloc(MQ_MAX_MSG_SIZE); // Allocate big size in advance
     struct mq_attr mqAttr = {0};
 
-    mqd_t mq = mq_open(MQ_NAME, O_RDONLY);
+    mqd_t mq = mq_open(MQ__MINERS_NAME, O_RDONLY);
 
     for(;;)
     {

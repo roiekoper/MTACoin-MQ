@@ -16,8 +16,8 @@ int main()
     attr_server.mq_msgsize = MQ_MAX_MSG_SIZE;
 
     /* create the message queue and close(not delete) it immidiatly as it will be used only by children */
-    mq_unlink(MQ_NAME); // delete first if already exists, this requires sudo privilege
-    mq = mq_open(MQ_NAME, O_CREAT, S_IRWXU | S_IRWXG, &attr);
+    mq_unlink(MQ__MINERS_NAME); // delete first if already exists, this requires sudo privilege
+    mq = mq_open(MQ__MINERS_NAME, O_CREAT, S_IRWXU | S_IRWXG, &attr);
 
     mq_unlink(MQ_SERVER_NAME);
     mq = mq_open(MQ_SERVER_NAME, O_CREAT, S_IRWXU | S_IRWXG, &attr_server);

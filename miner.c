@@ -5,9 +5,7 @@ void main(){
     struct mq_attr mqAttr = {0};
     BLOCK_T *minerBlock = NULL;
     BLOCK_T *newBlock = NULL;
-    MSG_T* msg;
-
-    mqd_t mq = mq_open(MQ_NAME, O_WRONLY);
+    mqd_t mq = mq_open(MQ__MINERS_NAME, O_WRONLY);
 
 
     for(;;)
@@ -25,6 +23,7 @@ void main(){
 
             if ((minerBlock->hash & mask) == 0)
             {
+                MSG_T* msg;
                 newBlock = minerBlock;
                 printf("Miner #%d: Mined a new block #%d, with the hash 0x%08x\n", minerBlock->relayed_by,
                         minerBlock->height,
@@ -32,13 +31,13 @@ void main(){
                 msg = malloc(sizeof(MSG_T));
                 (msg->block) = newBlock;
                 mq_send(mq, (char*)msg, MQ_MAX_MSG_SIZE, 0);
+
+                free(msg);
             }
             else
             {
                 updateMinerBlock(minerBlock);
             }
-
-            free(msg);
         }
     }
 }
