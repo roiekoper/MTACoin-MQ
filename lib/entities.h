@@ -50,16 +50,31 @@ int indices[NUM_OF_MINER];
 pthread_mutex_t chain_lock;
 pthread_cond_t new_block_cond;
 
-#define MQ_MAX_SIZE         10
-#define MQ_MAX_MSG_SIZE     100 		//Some big value(in bytes)
-#define MQ__MINERS_NAME             "/my_mq"
-#define MQ_SERVER_NAME      "/server_mq"
+#define CHAR_SIZE                    100
+#define MQ_MAX_SIZE                  10
+#define MQ_MAX_MSG_SIZE              100 		//Some big value(in bytes)
+#define MQ_MINERS_TEMPLATE_NAME      "/miner_%d_q"
+#define MQ_MINERS_NAME     "/my_mq"
+#define MQ_SERVER_NAME      "/server_blocks_q"
 
+typedef struct connection_request{
+    unsigned int id;
+    char *que_name;
+}CONNECTION_REQUEST;
 
-/* Data that will be passed from the Writer to the reader
-should hold the actual application data */
-typedef struct msg{
+typedef struct block_message{
     BLOCK_T *block;
+}BLOCK_MESSAGE;
+
+
+typedef enum{
+    BLOCK_MESSAGE,
+    CONNECTION_REQUEST
+} MESSAGE_TYPE_E;
+
+typedef struct msg{
+    MESSAGE_TYPE_E type;
+    char data[]; // Dynamic/flexible array - place holder for unknown size data
 }MSG_T;
 
 #endif
