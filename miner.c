@@ -19,7 +19,7 @@ void main(int argc, char **argv) {
         /* Check if there is place in the Q, if yes increment send, if no print error and try again */
         mq_getattr(miner_mq, &mqAttr);
         if (mqAttr.mq_curmsgs == MQ_MAX_SIZE) {
-            printf("Queue(%d) reached max number of messages(%ld)\n", mq, mqAttr.mq_maxmsg);
+            printf("Queue(%d) reached max number of messages(%ld)\n", miner_mq, mqAttr.mq_maxmsg);
         } else {
             if (miner_send_request) {
                 printf("Miner %d: generate miner block\n", getpid());
