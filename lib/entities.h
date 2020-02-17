@@ -10,6 +10,9 @@
 #include <zlib.h> // for crc32 method
 #include <pthread.h>
 #include <time.h>
+#include <mqueue.h>
+#include <unistd.h>
+
 
 #define NUM_OF_MINER 5
 #define NUM_OF_GOOD_MINER 4
@@ -23,7 +26,7 @@
 
 #define POLICY_STR(policy) (policy == SCHED_FIFO) ? "SCHED_FIFO" : (policy == SCHED_RR) ? "SCHED_RR" : (policy == SCHED_OTHER) ? "SCHED_OTHER" : "???"
 
-typedef struct {
+typedef struct block_t{
     int height;        // Incremental ID of the block in the chain
     int timestamp;    // Time of the mine in seconds since epoch
     unsigned long hash;        // Current block hash value
@@ -34,11 +37,11 @@ typedef struct {
 } BLOCK_T;
 
 typedef struct node {
-    BLOCK_T * block;
-    struct node * prev;
-} node_t;
+    BLOCK_T *block;
+    struct NODE_T* prev;
+} NODE_T;
 
-node_t *block_chain_head = NULL;
+NODE_T *block_chain_head = NULL;
 int mask;
 BLOCK_T *newBlock = NULL;
 pthread_t miners[NUM_OF_MINER];
@@ -48,7 +51,6 @@ int indices[NUM_OF_MINER];
 pthread_mutex_t chain_lock;
 pthread_cond_t new_block_cond;
 
-#endif
 
 #define MQ_MAX_SIZE         10
 #define MQ_MAX_MSG_SIZE     100 		//Some big value(in bytes)
@@ -57,6 +59,9 @@ pthread_cond_t new_block_cond;
 
 /* Data that will be passed from the Writer to the reader
 should hold the actual application data */
-typedef struct msg{
+typedef struct msg_t{
     BLOCK_T *block;
-}MSG_T;
+} MSG_T;
+
+#endif
+

@@ -11,7 +11,7 @@ unsigned long generateHashFromBlock(BLOCK_T *block)
 
 void delete_list()
 {
-    node_t *node;
+    NODE_T *node;
     while (block_chain_head)
     {
         free(block_chain_head->block);
@@ -30,7 +30,7 @@ void print_block(BLOCK_T *block)
 
 void print_list()
 {
-    node_t *current = block_chain_head->prev;
+    NODE_T *current = block_chain_head->prev;
     print_block(block_chain_head->block);
 
     while (current != NULL)

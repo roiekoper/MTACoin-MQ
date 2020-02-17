@@ -1,6 +1,3 @@
-#include <stdio.h>
-#include <unistd.h>
-#include <mqueue.h>
 #include "lib/entities.h"
 //#include <sys/fcntl.h>
 

@@ -6,14 +6,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void push(node_t **head, BLOCK_T **new_block) {
-    node_t *prev_block = (*head);
-    *head = malloc(sizeof(node_t));
+void push(NODE_T **head, BLOCK_T **new_block) {
+    NODE_T *prev_block = (*head);
+    *head = malloc(sizeof(NODE_T));
     (*head)->block = *new_block;
     (*head)->prev  = prev_block;
 }
 
-BLOCK_T *get_last_block(node_t *head) {
+BLOCK_T *get_last_block(NODE_T *head) {
     BLOCK_T *head_block = head->block;
 
     BLOCK_T *head_block_copy = malloc(sizeof(BLOCK_T));

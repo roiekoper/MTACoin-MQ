@@ -6,7 +6,7 @@
 
 #include "lib/utils.h"
 #include "lib/entities.h"
-#include "stdio.h"
+
 
 void updateMinerBlock(BLOCK_T *minerBlock);
 BLOCK_T *generateMinerBlock(int relayed_by);

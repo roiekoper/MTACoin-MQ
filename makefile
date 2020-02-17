@@ -41,12 +41,11 @@ all: $(LS_SO) $(UTILS_SO) $(SERVER_O) $(MINER_O) $(MAIN_O)
     #@echo OBJS: $(OBJS)
 
 print:
-	#@echo PWD: $(PWD)
+	@echo LIBS_PATH: $(LIBS_PATH)
 	@echo LS_SO: $(LS_SO)
 	@echo UTILS_SO: $(UTILS_SO)
-	@echo MINER_SO: $(MINER_SO)
-	@echo SERVER_SO: $(SERVER_SO)
-	@echo BLOCK_CHAIN_SO: $(BLOCK_CHAIN_SO)
+	@echo $(shell $LD_LIBRARY_PATH)
+	#@echo BLOCK_CHAIN_SO: $(BLOCK_CHAIN_SO)
 	@echo MAIN_O: $(MAIN_O)
 	@echo SERVER_O: $(SERVER_O)
 	@echo MINER_O: $(MINER_O)
@@ -67,7 +66,7 @@ $(SO_DIR)/$(BLOCK_CHAIN).so: $(LIB)/$(BLOCK_CHAIN).c
 	$(CC) $(CFLAGS) $(LIBS_PATH) $^ -o $(subst $(BLOCK_CHAIN),lib$(BLOCK_CHAIN),$@) -l$(SERVER) -l$(MINER)
 
 $(O_DIR)/$(MAIN).out: $(MAIN).c
-	$(CC) $^ -o $@ $(SO_LIBS)
+	$(CC)  $^ -o $@ $(SO_LIBS)
 
 $(O_DIR)/$(SERVER).out: $(SERVER).c
 	$(CC) -L$(LIBS_PATH) $^ -o $@ $(SO_LIBS) -l$(UTILS)
