@@ -2,7 +2,9 @@
 
 void main() {
     createServerBlocksMessageQues();
+    printf("Server created blocks message ques\n");
     createMinersMessageQues();
+    printf("Server created new block message que\n");
 
     mqd_t miners_mq [NUM_OF_MINER];
     char miners_que_names[NUM_OF_MINER][CHAR_SIZE];
@@ -21,6 +23,7 @@ void main() {
     mqd_t server_mq = mq_open(MQ_SERVER_NAME, O_WRONLY);
 
     for (;;) {
+        printf("Server waiting on message ques\n");
         for(int i = 0; i < NUM_OF_MINER; i++){
             mq_receive(miners_mq[i], (char *) msg, MQ_MAX_MSG_SIZE, NULL);
             mq_getattr(miners_mq[i], &mqMinersAttr);
@@ -29,6 +32,7 @@ void main() {
             // Cast to concrete type
             if (msg->type == CONNECTION_REQUEST)
             {
+                printf("Server get CONNECTION_REQUEST message\n");
                 unsigned int miner_id = ((CONNECTION_REQUEST_MESSAGE*)msg->data)->id;
                 char* miner_que_name = ((CONNECTION_REQUEST_MESSAGE*)msg->data)->que_name;
                 printf("Received connection request from miner id %d, queue name %s\n", miner_id, miner_que_name );
@@ -36,6 +40,7 @@ void main() {
             }
             else
             {
+                printf("Server get BLOCK message\n");
                 BLOCK_T *minerBlockReceived = ((BLOCK_MESSAGE*)msg->data)->block;
                 print_block(minerBlockReceived);
                 printf("MINER QUE ID(#%u): remaining %ld messages in queue\n", i, mqMinersAttr.mq_curmsgs);

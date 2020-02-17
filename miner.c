@@ -8,7 +8,7 @@ void main(int argc, char **argv) {
     BLOCK_T *newBlock = NULL;
 
     int miner_id;
-    sscanf (argv[1],"%d",&miner_id);
+    sscanf(argv[1], "%d", &miner_id);
 
 
     sprintf(miner_que_name, MQ_MINERS_TEMPLATE_NAME, miner_id);
@@ -33,7 +33,7 @@ void main(int argc, char **argv) {
                            (unsigned int) minerBlock->hash);
                     msg = malloc(sizeof(MSG_T));
                     msg->type = BLOCK;
-                    ((BLOCK_MESSAGE*)msg->data)->block = newBlock;
+                    ((BLOCK_MESSAGE *) msg->data)->block = newBlock;
                     mq_send(miner_mq, (char *) msg, MQ_MAX_MSG_SIZE, 0);
 
                     free(msg);
@@ -41,11 +41,12 @@ void main(int argc, char **argv) {
                     updateMinerBlock(minerBlock);
                 }
             } else {
+                printf("Miner send CONNECTION_REQUEST to %s que \n", miner_que_name);
                 MSG_T *msg;
                 msg = malloc(sizeof(MSG_T));
                 msg->type = CONNECTION_REQUEST;
-                ((CONNECTION_REQUEST_MESSAGE*)msg->data)->id = (unsigned int) getpid();
-                ((CONNECTION_REQUEST_MESSAGE*)msg->data)->que_name = miner_que_name;
+                ((CONNECTION_REQUEST_MESSAGE *) msg->data)->id = (unsigned int) getpid();
+                ((CONNECTION_REQUEST_MESSAGE *) msg->data)->que_name = miner_que_name;
                 mq_send(miner_mq, (char *) msg, MQ_MAX_MSG_SIZE, 0);
 
                 free(msg);
