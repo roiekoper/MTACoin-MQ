@@ -3,10 +3,13 @@
 void main(int argc, char **argv) {
     int miner_send_request = 0;
     char miner_que_name[CHAR_SIZE];
-    int miner_id = (int) argv[1];
     struct mq_attr mqAttr = {0};
     BLOCK_T *minerBlock = NULL;
     BLOCK_T *newBlock = NULL;
+
+    int miner_id;
+    sscanf (argv[1],"%d",&miner_id);
+
 
     sprintf(miner_que_name, MQ_MINERS_TEMPLATE_NAME, miner_id);
     mqd_t miner_mq = mq_open(miner_que_name, O_WRONLY);
