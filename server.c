@@ -32,7 +32,7 @@ void main() {
             // Cast to concrete type
             if (msg->type == CONNECTION_REQUEST)
             {
-                printf("Server get CONNECTION_REQUEST message\n");
+                printf("Server get CONNECTION_REQUEST message on que %s\n",miners_que_names[i]);
                 unsigned int miner_id = ((CONNECTION_REQUEST_MESSAGE*)msg->data)->id;
                 char* miner_que_name = ((CONNECTION_REQUEST_MESSAGE*)msg->data)->que_name;
                 printf("Received connection request from miner id %d, queue name %s\n", miner_id, miner_que_name );
