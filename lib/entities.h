@@ -57,18 +57,17 @@ pthread_cond_t new_block_cond;
 #define MQ_MINERS_NAME     "/my_mq"
 #define MQ_SERVER_NAME      "/server_blocks_q"
 
-typedef struct connection_request{
+typedef struct connection_request_message{
     unsigned int id;
     char *que_name;
-}CONNECTION_REQUEST;
+}CONNECTION_REQUEST_MESSAGE;
 
 typedef struct block_message{
     BLOCK_T *block;
 }BLOCK_MESSAGE;
 
-
 typedef enum{
-    BLOCK_MESSAGE,
+    BLOCK,
     CONNECTION_REQUEST
 } MESSAGE_TYPE_E;
 

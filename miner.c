@@ -29,7 +29,7 @@ void main(int argc, char **argv) {
                            minerBlock->height,
                            (unsigned int) minerBlock->hash);
                     msg = malloc(sizeof(MSG_T));
-                    msg->type = BLOCK_MESSAGE;
+                    msg->type = BLOCK;
                     ((BLOCK_MESSAGE*)msg->data)->block = newBlock;
                     mq_send(miner_mq, (char *) msg, MQ_MAX_MSG_SIZE, 0);
 
@@ -41,8 +41,8 @@ void main(int argc, char **argv) {
                 MSG_T *msg;
                 msg = malloc(sizeof(MSG_T));
                 msg->type = CONNECTION_REQUEST;
-                ((CONNECTION_REQUEST*)msg->data)->id = (unsigned int) getpid();
-                ((CONNECTION_REQUEST*)msg->data)->que_name = miner_que_name;
+                ((CONNECTION_REQUEST_MESSAGE*)msg->data)->id = (unsigned int) getpid();
+                ((CONNECTION_REQUEST_MESSAGE*)msg->data)->que_name = miner_que_name;
                 mq_send(miner_mq, (char *) msg, MQ_MAX_MSG_SIZE, 0);
 
                 free(msg);

@@ -29,8 +29,8 @@ void main() {
             // Cast to concrete type
             if (msg->type == CONNECTION_REQUEST)
             {
-                unsigned int miner_id = ((CONNECTION_REQUEST*)msg->data)->id;
-                String miner_que_name = ((CONNECTION_REQUEST*)msg->data)->que_name;
+                unsigned int miner_id = ((CONNECTION_REQUEST_MESSAGE*)msg->data)->id;
+                String miner_que_name = ((CONNECTION_REQUEST_MESSAGE*)msg->data)->que_name;
                 printf("Received connection request from miner id %d, queue name %s\n", miner_id, miner_que_name );
                 printf("MINER QUE ID(#%u): remaining %ld messages in queue\n", miner_id, mqMinersAttr.mq_curmsgs);
             }
