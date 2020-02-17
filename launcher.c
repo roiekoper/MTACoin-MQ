@@ -17,7 +17,7 @@ int main() {
         rpid[i] = vfork();
         if (rpid[i] == 0) //Reader
         {
-            char *argv[] = {"./build/miner.out", i, NULL};
+            char *argv[] = {"./build/miner.out", (char *) i, NULL};
             execv("./build/miner.out", argv);
         }
     }
