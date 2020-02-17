@@ -1,51 +1,96 @@
 #include "server.h"
 
 void main() {
-    createServerBlocksMessageQues();
-    printf("Server created blocks message ques\n");
-    createMinersMessageQues();
-    printf("Server created new block message que\n");
+    // createServerBlocksMessageQues();
+    // printf("Server created blocks message ques\n");
+    // createMinersMessageQues();
+    // printf("Server created new block message que\n");
 
     mqd_t miners_mq [NUM_OF_MINER];
     char miners_que_names[NUM_OF_MINER][CHAR_SIZE];
 
-    MSG_T* msg = malloc(MQ_MAX_MSG_SIZE); // Allocate big size in advance
+    printf("Server generate new block to chain\n");
+    generateInitBlock();
+    
+    mq_unlink(MQ_CONNECTION_REQUEST_NAME); // delete first if already exists, this requires sudo privilege
+    mqd_t connection_mq = mq_open(MQ_CONNECTION_REQUEST_NAME, O_RDONLY);
+
+    mq_unlink(MQ_NEW_BLOCK_NAME);
+    mqd_t newBlock_mq = mq_open(MQ_NEW_BLOCK_NAME, O_RDONLY);
+    
+    struct mq_attr mqConnectionAttr = {0};
     struct mq_attr mqMinersAttr = {0};
-    struct mq_attr mqServer = {0};
+    struct mq_attr mqNewBlockAtt = {0};
+
+    MSG_T* msg = malloc(MQ_MAX_MSG_SIZE); // Allocate big size in advance
+
+    MSG_T* block_chain_msg = malloc(MQ_MAX_MSG_SIZE);
+    block_chain_msg->type = BLOCK;
+    ((BLOCK_MESSAGE *) block_chain_msg->data)->block = block_chain_head;
 
     // open chanel with each miner
-    for(int i = 0; i < NUM_OF_MINER; i++){
-        sprintf(miners_que_names[i], MQ_MINERS_TEMPLATE_NAME, i);
-        miners_mq[i] = mq_open(miners_que_names[i], O_RDONLY);
-    }
+    // for(int i = 0; i < NUM_OF_MINER; i++){
+    //     sprintf(miners_que_names[i], MQ_MINERS_TEMPLATE_NAME, i);
+    //     miners_mq[i] = mq_open(miners_que_names[i], O_RDONLY);
+    // }
 
-    // open chanel to update with new blocks mined by the server
-    mqd_t server_mq = mq_open(MQ_SERVER_NAME, O_WRONLY);
+    
+
+    // open chanel to update with new blocks by miners
+    
 
     for (;;) {
-        printf("Server waiting on message ques\n");
-        for(int i = 0; i < NUM_OF_MINER; i++){
-            mq_receive(miners_mq[i], (char *) msg, MQ_MAX_MSG_SIZE, NULL);
-            mq_getattr(miners_mq[i], &mqMinersAttr);
+        //printf("Server waiting on message ques\n");
 
+        mq_getattr(connection_mq, &mqConnectionAttr);
+        if(mqConnectionAttr.mq_curmsgs > 0){
+            
+            mq_receive(connection_mq, (char *) msg, MQ_MAX_MSG_SIZE, NULL); 
+            
+            printf("Server get CONNECTION_REQUEST message: %s\n",&msg);
+            
 
-            // Cast to concrete type
-            if (msg->type == CONNECTION_REQUEST)
-            {
-                printf("Server get CONNECTION_REQUEST message on que %s\n",miners_que_names[i]);
-                unsigned int miner_id = ((CONNECTION_REQUEST_MESSAGE*)msg->data)->id;
-                char* miner_que_name = ((CONNECTION_REQUEST_MESSAGE*)msg->data)->que_name;
-                printf("Received connection request from miner id %d, queue name %s\n", miner_id, miner_que_name );
-                printf("MINER QUE ID(#%u): remaining %ld messages in queue\n", miner_id, mqMinersAttr.mq_curmsgs);
-            }
-            else
-            {
-                printf("Server get BLOCK message\n");
-                BLOCK_T *minerBlockReceived = ((BLOCK_MESSAGE*)msg->data)->block;
-                print_block(minerBlockReceived);
-                printf("MINER QUE ID(#%u): remaining %ld messages in queue\n", i, mqMinersAttr.mq_curmsgs);
-            }
+            unsigned int miner_id = ((CONNECTION_REQUEST_MESSAGE*)msg->data)->id;
+            char* miner_que_name = ((CONNECTION_REQUEST_MESSAGE*)msg->data)->que_name;
+
+            //sprintf(miners_que_names[numberOfConnections], MQ_MINERS_TEMPLATE_NAME, miner_id);
+            
+            printf("Server received connection request from miner id %d, queue name %s\n", miner_id, miner_que_name);
+            miners_mq[numberOfConnections] = mq_open(miner_que_name, O_WRONLY);
+
+            mq_send(miners_mq[numberOfConnections], (char *) block_chain_msg, MQ_MAX_MSG_SIZE, 0);
+
+            printf("Server send massege to miner %d\n", miner_id);
+
+            printf("Connectin request Q: remaining %ld messages in queue\n", mqConnectionAttr.mq_curmsgs);
+            numberOfConnections++;
         }
+
+        mq_getattr(newBlock_mq, &mqNewBlockAtt);
+        if(mqNewBlockAtt.mq_curmsgs > 0){
+            printf("Server get BLOCK message\n");
+            mq_receive(newBlock_mq, (char *) msg, MQ_MAX_MSG_SIZE, NULL); 
+            BLOCK_T *minerBlockReceived = ((BLOCK_MESSAGE*)msg->data)->block;
+            print_block(minerBlockReceived);
+
+        }
+        
+
+        // for(int i = 0; i < numberOfConnections; i++){
+            
+        //     mq_getattr(miners_mq[i], &mqMinersAttr);
+
+        //     if(mqMinersAttr.mq_curmsgs > 0) {
+        //         mq_receive(miners_mq[i], (char *) msg, MQ_MAX_MSG_SIZE, NULL);
+        //         printf("Server get BLOCK message\n");
+        //         BLOCK_T *minerBlockReceived = ((BLOCK_MESSAGE*)msg->data)->block;
+        //         print_block(minerBlockReceived);
+        //         printf("MINER QUE ID(#%u): remaining %ld messages in queue\n", i, mqMinersAttr.mq_curmsgs);
+
+
+        //     }
+
+        // }
     }
 }
 
@@ -75,8 +120,8 @@ void createServerBlocksMessageQues() {
     server_attr.mq_msgsize = MQ_MAX_MSG_SIZE;
 
     /* create the message queue and close(not delete) it immidiatly as it will be used only by children */
-    mq_unlink(MQ_SERVER_NAME); // delete first if already exists, this requires sudo privilege
-    mq_server = mq_open(MQ_SERVER_NAME, O_CREAT, S_IRWXU | S_IRWXG, &server_attr);
+    //mq_unlink(MQ_SERVER_NAME); // delete first if already exists, this requires sudo privilege
+    //mq_server = mq_open(MQ_SERVER_NAME, O_CREAT, S_IRWXU | S_IRWXG, &server_attr);
 }
 
 //void *server(void *pVoid)
@@ -120,24 +165,24 @@ void createServerBlocksMessageQues() {
 //    //delete_list();
 //}
 //
-//void generateInitBlock()
-//{
-//
-//    node_t *head_node_list = malloc(sizeof(node_t));
-//    BLOCK_T *first_block = malloc(sizeof(BLOCK_T));
-//    first_block->height = 0;
-//    first_block->timestamp = (int)time(NULL); // current time in seconds
-//    first_block->relayed_by = -1;             // server id
-//    first_block->nonce = 0;                   // dummy nonce
-//    first_block->prev_hash = 0;               // dummy prev hash
-//    first_block->hash = 0;                    // dummy hash
-//    first_block->difficulty = NUM_OF_ZERO;
-//
-//    head_node_list->prev = NULL;
-//    head_node_list->block = first_block;
-//    block_chain_head = head_node_list; // init head of list
-//}
-//
+void generateInitBlock()
+{
+
+   NODE_T *head_node_list = malloc(sizeof(NODE_T));
+   BLOCK_T *first_block = malloc(sizeof(BLOCK_T));
+   first_block->height = 0;
+   first_block->timestamp = (int)time(NULL); // current time in seconds
+   first_block->relayed_by = -1;             // server id
+   first_block->nonce = 0;                   // dummy nonce
+   first_block->prev_hash = 0;               // dummy prev hash
+   first_block->hash = 0;                    // dummy hash
+   first_block->difficulty = NUM_OF_ZERO;
+
+   head_node_list->prev = NULL;
+   head_node_list->block = first_block;
+   block_chain_head = head_node_list; // init head of list
+}
+
 //int isLegalBlock(BLOCK_T *serverBlock)
 //{
 //    unsigned long hash = generateHashFromBlock(serverBlock);

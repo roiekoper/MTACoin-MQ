@@ -54,8 +54,8 @@ pthread_cond_t new_block_cond;
 #define MQ_MAX_SIZE                  10
 #define MQ_MAX_MSG_SIZE              100 		//Some big value(in bytes)
 #define MQ_MINERS_TEMPLATE_NAME      "/miner_%d_q"
-#define MQ_MINERS_NAME     "/my_mq"
-#define MQ_SERVER_NAME      "/server_blocks_q"
+#define MQ_CONNECTION_REQUEST_NAME     "/connection_request_q"
+#define MQ_NEW_BLOCK_NAME      "/new_block_q"
 
 typedef struct connection_request_message{
     unsigned int id;
