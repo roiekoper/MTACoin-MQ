@@ -7,6 +7,8 @@
 #include "lib/entities.h"
 #include "lib/utils.h"
 
+void createMinersMessageQues();
+void createServerBlocksMessageQues();
 //void *server(void *pVoid);
 //void generateInitBlock();
 //int isLegalBlock(BLOCK_T *serverBlock);

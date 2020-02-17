@@ -1,24 +1,82 @@
 #include "server.h"
 
+void main() {
+    createServerBlocksMessageQues();
+    printf("Server created blocks message ques\n");
+    createMinersMessageQues();
+    printf("Server created new block message que\n");
 
-
-void main(){
+    mqd_t miners_mq [NUM_OF_MINER];
+    char miners_que_names[NUM_OF_MINER][CHAR_SIZE];
 
     MSG_T* msg = malloc(MQ_MAX_MSG_SIZE); // Allocate big size in advance
-    struct mq_attr mqAttr = {0};
+    struct mq_attr mqMinersAttr = {0};
+    struct mq_attr mqServer = {0};
 
-    mqd_t mq = mq_open(MQ_NAME, O_RDONLY);
-
-    for(;;)
-    {
-        /* Receive msg */
-        mq_receive(mq, (char*)msg, MQ_MAX_MSG_SIZE, NULL);
-        /* Get attr for getting number of msgs currently in the Q*/
-        mq_getattr(mq, &mqAttr);
-
-        print_block(msg->block);
-        // Cast to concrete type
+    // open chanel with each miner
+    for(int i = 0; i < NUM_OF_MINER; i++){
+        sprintf(miners_que_names[i], MQ_MINERS_TEMPLATE_NAME, i);
+        miners_mq[i] = mq_open(miners_que_names[i], O_RDONLY);
     }
+
+    // open chanel to update with new blocks mined by the server
+    mqd_t server_mq = mq_open(MQ_SERVER_NAME, O_WRONLY);
+
+    for (;;) {
+        printf("Server waiting on message ques\n");
+        for(int i = 0; i < NUM_OF_MINER; i++){
+            mq_receive(miners_mq[i], (char *) msg, MQ_MAX_MSG_SIZE, NULL);
+            mq_getattr(miners_mq[i], &mqMinersAttr);
+
+
+            // Cast to concrete type
+            if (msg->type == CONNECTION_REQUEST)
+            {
+                printf("Server get CONNECTION_REQUEST message on que %s\n",miners_que_names[i]);
+                unsigned int miner_id = ((CONNECTION_REQUEST_MESSAGE*)msg->data)->id;
+                char* miner_que_name = ((CONNECTION_REQUEST_MESSAGE*)msg->data)->que_name;
+                printf("Received connection request from miner id %d, queue name %s\n", miner_id, miner_que_name );
+                printf("MINER QUE ID(#%u): remaining %ld messages in queue\n", miner_id, mqMinersAttr.mq_curmsgs);
+            }
+            else
+            {
+                printf("Server get BLOCK message\n");
+                BLOCK_T *minerBlockReceived = ((BLOCK_MESSAGE*)msg->data)->block;
+                print_block(minerBlockReceived);
+                printf("MINER QUE ID(#%u): remaining %ld messages in queue\n", i, mqMinersAttr.mq_curmsgs);
+            }
+        }
+    }
+}
+
+void createMinersMessageQues() {
+    for (int i = 0; i < NUM_OF_MINER; i++) {
+        mqd_t mq;
+        struct mq_attr attr = {0};
+        char que_name[CHAR_SIZE];
+
+        /* initialize the queue attributes */
+        attr.mq_maxmsg = MQ_MAX_SIZE;
+        attr.mq_msgsize = MQ_MAX_MSG_SIZE;
+
+        /* create the message queue and close(not delete) it immidiatly as it will be used only by children */
+        sprintf(que_name, MQ_MINERS_TEMPLATE_NAME, i);
+        mq_unlink(que_name); // delete first if already exists, this requires sudo privilege
+        mq = mq_open(que_name, O_CREAT, S_IRWXU | S_IRWXG, &attr);
+    }
+}
+
+void createServerBlocksMessageQues() {
+    mqd_t mq_server;
+    struct mq_attr server_attr = {0};
+
+    /* initialize the queue attributes */
+    server_attr.mq_maxmsg = MQ_MAX_SIZE;
+    server_attr.mq_msgsize = MQ_MAX_MSG_SIZE;
+
+    /* create the message queue and close(not delete) it immidiatly as it will be used only by children */
+    mq_unlink(MQ_SERVER_NAME); // delete first if already exists, this requires sudo privilege
+    mq_server = mq_open(MQ_SERVER_NAME, O_CREAT, S_IRWXU | S_IRWXG, &server_attr);
 }
 
 //void *server(void *pVoid)

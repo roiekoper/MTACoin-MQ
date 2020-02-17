@@ -1,62 +1,71 @@
 #include "miner.h"
 
-void main(){
-    float counter = 0;
+void main(int argc, char **argv) {
+    int miner_send_request = 0;
+    char miner_que_name[CHAR_SIZE];
     struct mq_attr mqAttr = {0};
     BLOCK_T *minerBlock = NULL;
     BLOCK_T *newBlock = NULL;
-    MSG_T* msg;
 
-    mqd_t mq = mq_open(MQ_NAME, O_WRONLY);
+    int miner_id;
+    sscanf(argv[1], "%d", &miner_id);
 
 
-    for(;;)
-    {
+    sprintf(miner_que_name, MQ_MINERS_TEMPLATE_NAME, miner_id);
+    mqd_t miner_mq = mq_open(miner_que_name, O_WRONLY);
+
+
+    for (;;) {
         /* Check if there is place in the Q, if yes increment send, if no print error and try again */
-        mq_getattr(mq, &mqAttr);
-        if (mqAttr.mq_curmsgs == MQ_MAX_SIZE)
-        {
-            printf("Queue(%d) reached max number of messages(%ld)\n", mq, mqAttr.mq_maxmsg);
-        }
-        else
-        {
-            //printf("Miner %d: generate miner block\n", *thread_id);
-            //minerBlock = generateMinerBlock(*thread_id); //get the new block
+        mq_getattr(miner_mq, &mqAttr);
+        if (mqAttr.mq_curmsgs == MQ_MAX_SIZE) {
+            printf("Queue(%d) reached max number of messages(%ld)\n", miner_mq, mqAttr.mq_maxmsg);
+        } else {
+            if (miner_send_request) {
+                printf("Miner %d: generate miner block\n", getpid());
+                minerBlock = generateMinerBlock(getpid()); //get the new block
 
-            printf("Miner %d: generate miner block\n", 1);
-            minerBlock = generateMinerBlock(1); //get the new block
+                if ((minerBlock->hash & mask) == 0) {
+                    MSG_T *msg;
+                    newBlock = minerBlock;
+                    printf("Miner #%d: Mined a new block #%d, with the hash 0x%08x\n", minerBlock->relayed_by,
+                           minerBlock->height,
+                           (unsigned int) minerBlock->hash);
+                    msg = malloc(sizeof(MSG_T));
+                    msg->type = BLOCK;
+                    ((BLOCK_MESSAGE *) msg->data)->block = newBlock;
+                    mq_send(miner_mq, (char *) msg, MQ_MAX_MSG_SIZE, 0);
 
-            if ((minerBlock->hash & mask) == 0)
-            {
-                newBlock = minerBlock;
-                          
+                    free(msg);
+                } else {
+                    updateMinerBlock(minerBlock);
+                }
+            } else {
+                printf("Miner send CONNECTION_REQUEST to %s que \n", miner_que_name);
+                MSG_T *msg;
                 msg = malloc(sizeof(MSG_T));
-                (msg->block) = newBlock;
-                mq_send(mq, (char*)msg, MQ_MAX_MSG_SIZE, 0);
-                printf("Miner #%d: Mined a new block #%d, with the hash 0x%08x\n", minerBlock->relayed_by, minerBlock->height, (unsigned int)minerBlock->hash);
-            }
-            else
-            {
-                updateMinerBlock(minerBlock);
-            }
+                msg->type = CONNECTION_REQUEST;
+                ((CONNECTION_REQUEST_MESSAGE *) msg->data)->id = (unsigned int) getpid();
+                ((CONNECTION_REQUEST_MESSAGE *) msg->data)->que_name = miner_que_name;
+                mq_send(miner_mq, (char *) msg, MQ_MAX_MSG_SIZE, 0);
 
-            free(msg);
+                free(msg);
+                miner_send_request = 1;
+            }
         }
     }
 }
 
-void updateMinerBlock(BLOCK_T *minerBlock)
-{
+void updateMinerBlock(BLOCK_T *minerBlock) {
     minerBlock->nonce = rand();
-    minerBlock->timestamp = (int)time(NULL); // current time
+    minerBlock->timestamp = (int) time(NULL); // current time
     minerBlock->hash = generateHashFromBlock(minerBlock);
 }
 
-BLOCK_T *generateMinerBlock(int relayed_by)
-{
+BLOCK_T *generateMinerBlock(int relayed_by) {
     BLOCK_T *new_block = malloc(sizeof(BLOCK_T));
     new_block->height = block_chain_head->block->height + 1;
-    new_block->timestamp = (int)time(NULL);               // current time in seconds
+    new_block->timestamp = (int) time(NULL);               // current time in seconds
     new_block->relayed_by = relayed_by;                   // server id
     new_block->nonce = 0;                                 // dummy nonce
     new_block->prev_hash = block_chain_head->block->hash; // dummy prev hash
@@ -67,7 +76,7 @@ BLOCK_T *generateMinerBlock(int relayed_by)
 }
 
 
-//void *miner(int *thread_id)
+//void *miner(int * )
 //{
 //    BLOCK_T *minerBlock = NULL;
 //    int policy = -1;
