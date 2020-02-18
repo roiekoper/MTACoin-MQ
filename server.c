@@ -29,7 +29,7 @@ void main() {
         mq_getattr(connection_mq, &mqAttr);
         while (mqAttr.mq_curmsgs > 0) {
 
-            CONNECTION_REQUEST_MESSAGE *rec_msg = malloc(MQ_MAX_MSG_SIZE);
+            CONNECTION_REQUEST_MESSAGE *rec_msg = (CONNECTION_REQUEST_MESSAGE *)malloc(sizeof(CONNECTION_REQUEST_MESSAGE));
             mq_receive(connection_mq, (char *) rec_msg, MQ_MAX_MSG_SIZE, NULL);
 
             unsigned int miner_id = rec_msg->id;
@@ -39,16 +39,15 @@ void main() {
             printf("Server received connection request from miner id %d, queue name %s\n", miner_id, miner_que_name);
 
             miners_mq[numberOfConnections] = mq_open(miner_que_name, O_WRONLY);
-            //print_block(((BLOCK_MESSAGE *) block_chain_msg->data)->block);
 
             BLOCK_T *blockToSend = block_chain_head->block;
+            //print_block(blockToSend);
             mq_send(miners_mq[numberOfConnections], (char *) blockToSend, MQ_MAX_MSG_SIZE, 0);
 
             mq_getattr(miners_mq[numberOfConnections], &mqAttr);
             printf("Server send massege to miner %d\n", miner_id);
 
-            printf("Miners sent new block request Q: remaining %ld messages in queue %s\n", mqAttr.mq_curmsgs,
-                   miner_que_name);
+            printf("Server: %s after server sent message %ld\n", miner_que_name, mqAttr.mq_curmsgs);
             numberOfConnections++;
             free(rec_msg);
         }

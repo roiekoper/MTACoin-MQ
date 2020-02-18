@@ -26,14 +26,14 @@ void main(int argc, char **argv) {
     mq_unlink(miner_que_name);
     mqd_t miner_mq = mq_open(miner_que_name, O_CREAT, S_IRWXU | S_IRWXG, &mqInitAttr);
 
-    CONNECTION_REQUEST_MESSAGE *connection_msg = malloc(MQ_MAX_MSG_SIZE);
+    CONNECTION_REQUEST_MESSAGE *connection_msg = (CONNECTION_REQUEST_MESSAGE*)malloc(sizeof(CONNECTION_REQUEST_MESSAGE));
     connection_msg->id = (unsigned int)miner_id;
     strcpy(connection_msg->que_name, miner_que_name);
 
     mq_send(connection_mq, (char *) connection_msg, MQ_MAX_MSG_SIZE, 0);
     free(connection_msg);
 
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 500; i++) {
         /* Check if there is place in the Q, to send generated block to server */
         mq_getattr(newBlock_mq, &mqNewBlocktAttr);
 
@@ -46,14 +46,15 @@ void main(int argc, char **argv) {
             //printf("%s status: %ld\n",miner_que_name, mqNewBlocktAttr.mq_curmsgs);
             if (mqNewBlocktAttr.mq_curmsgs > 0) {
                 BLOCK_T *received_block = (BLOCK_T *)malloc(sizeof(BLOCK_T));
-                mq_receive(miner_mq, (char *) received_block, MQ_MAX_MSG_SIZE, NULL);
+                
+                mq_receive(miner_mq, (char *) received_block,MQ_MAX_MSG_SIZE, NULL);
                 mq_getattr(miner_mq, &mqNewBlocktAttr);
+                (BLOCK_T *)malloc(sizeof(BLOCK_T));
                 printf("Miner %d: after mq_receive: %ld\n", miner_id, mqNewBlocktAttr.mq_curmsgs);
                 printf("Miner %d: Received message from server\n", miner_id);
                 print_block(received_block);
-
-                print_block(received_block);
                 minerBlock = generateMinerBlock(received_block, miner_id); //get the new block
+                free(received_block);
             }
 
             // minerBlock = generateMinerBlock(getpid()); //get the new block
@@ -85,7 +86,8 @@ void updateMinerBlock(BLOCK_T *minerBlock) {
 }
 
 BLOCK_T *generateMinerBlock(BLOCK_T *blockChain, int relayed_by) {
-    BLOCK_T *new_block = malloc(sizeof(BLOCK_T));
+    BLOCK_T *new_block = (BLOCK_T*)malloc(sizeof(BLOCK_T));
+    printf("1234\n");
     new_block->height = blockChain->height + 1;
     new_block->timestamp = (int) time(NULL);               // current time in seconds
     new_block->relayed_by = relayed_by;                   // server id
@@ -93,7 +95,6 @@ BLOCK_T *generateMinerBlock(BLOCK_T *blockChain, int relayed_by) {
     new_block->prev_hash = blockChain->hash; // dummy prev hash
     new_block->hash = -1;                                 // dummy hash
     new_block->difficulty = NUM_OF_ZERO;
-
     return new_block;
 }
 

@@ -42,7 +42,6 @@ typedef struct node {
 
 NODE_T *block_chain_head = NULL;
 int mask;
-BLOCK_T *newBlock = NULL;
 pthread_t miners[NUM_OF_MINER];
 pthread_t server_thread;
 int indices[NUM_OF_MINER];
@@ -50,9 +49,9 @@ int indices[NUM_OF_MINER];
 pthread_mutex_t chain_lock;
 pthread_cond_t new_block_cond;
 
-#define CHAR_SIZE                    100
+#define CHAR_SIZE                    20
 #define MQ_MAX_SIZE                  10
-#define MQ_MAX_MSG_SIZE              200 		//Some big value(in bytes)
+#define MQ_MAX_MSG_SIZE              100 		//Some big value(in bytes)
 #define MQ_MINERS_TEMPLATE_NAME      "/miner_%d_q"
 #define MQ_CONNECTION_REQUEST_NAME     "/connection_request_q"
 #define MQ_NEW_BLOCK_NAME      "/new_block_q"
