@@ -1,18 +1,10 @@
 #include "server.h"
 
 void main() {
-    // createServerBlocksMessageQues();
-    // printf("Server created blocks message ques\n");
-    // createMinersMessageQues();
-    // printf("Server created new block message que\n");
-
     mqd_t miners_mq[NUM_OF_MINER];
     char miners_que_names[NUM_OF_MINER][CHAR_SIZE];
     struct mq_attr mq_connection_request_attr = {0};
     struct mq_attr mq_new_block_attr = {0};
-
-    printf("Server generate new block to chain\n");
-    generateInitBlock();
 
     /* initialize the queue attributes */
     mq_connection_request_attr.mq_maxmsg = MQ_MAX_SIZE;
@@ -22,9 +14,11 @@ void main() {
     mq_new_block_attr.mq_maxmsg = MQ_MAX_SIZE;
     mq_new_block_attr.mq_msgsize = MQ_MAX_MSG_SIZE;
 
+    printf("Server generate new block to chain\n");
+    generateInitBlock();
+
     mq_unlink(MQ_CONNECTION_REQUEST_NAME); // delete first if already exists, this requires sudo privilege
     mqd_t connection_mq = mq_open(MQ_CONNECTION_REQUEST_NAME, O_CREAT, S_IRWXU | S_IRWXG, &mq_connection_request_attr);
-
 
     mq_unlink(MQ_NEW_BLOCK_NAME);
     mqd_t newBlock_mq = mq_open(MQ_NEW_BLOCK_NAME, O_CREAT, S_IRWXU | S_IRWXG, &mq_new_block_attr);
@@ -32,33 +26,19 @@ void main() {
     printf("Server generate all ques\n");
 
     struct mq_attr mqAttr = {0};
-
     MSG_T *block_chain_msg = malloc(MQ_MAX_MSG_SIZE);
     block_chain_msg->type = BLOCK;
     ((BLOCK_MESSAGE *) block_chain_msg->data)->block = block_chain_head->block;
 
-    // open chanel with each miner
-    // for(int i = 0; i < NUM_OF_MINER; i++){
-    //     sprintf(miners_que_names[i], MQ_MINERS_TEMPLATE_NAME, i);
-    //     miners_mq[i] = mq_open(miners_que_names[i], O_RDONLY);
-    // }
-
-
-
-    // open chanel to update with new blocks by miners
-
-
     for (;;) {
         //printf("Server waiting on message ques\n");
-
         mq_getattr(connection_mq, &mqAttr);
         while (mqAttr.mq_curmsgs > 0) {
 
-            MSG_T *msg = malloc(sizeof(MSG_T) + sizeof(CONNECTION_REQUEST_MESSAGE));
+            MSG_T *msg = malloc(MQ_MAX_MSG_SIZE);
             mq_receive(connection_mq, (char *) msg, MQ_MAX_MSG_SIZE, NULL);
 
             printf("Server get CONNECTION_REQUEST message\n");
-
 
             unsigned int miner_id = ((CONNECTION_REQUEST_MESSAGE *) msg->data)->id;
             char miner_que_name[CHAR_SIZE];
@@ -84,7 +64,7 @@ void main() {
         mq_getattr(newBlock_mq, &mqAttr);
         if (mqAttr.mq_curmsgs > 0) {
             printf("Server get BLOCK message\n");
-            MSG_T *msg = malloc(sizeof(MSG_T) + sizeof(BLOCK_MESSAGE));
+            MSG_T *msg = malloc(MQ_MAX_MSG_SIZE);
             mq_receive(newBlock_mq, (char *) msg, MQ_MAX_MSG_SIZE, NULL);
             BLOCK_T *minerBlockReceived = ((BLOCK_MESSAGE *) msg->data)->block;
             print_block(minerBlockReceived);

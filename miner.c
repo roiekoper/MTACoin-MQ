@@ -7,24 +7,29 @@ void main(int argc, char **argv) {
     BLOCK_T *minerBlock = NULL;
     BLOCK_T *newBlock = NULL;
 
-    int miner_id;
-    sscanf(argv[1], "%d", &miner_id);
-
-    sprintf(miner_que_name, MQ_MINERS_TEMPLATE_NAME, miner_id);
-
     /* initialize the queue attributes */
     mqAttr.mq_maxmsg = MQ_MAX_SIZE;
     mqAttr.mq_msgsize = MQ_MAX_MSG_SIZE;
 
+    // ----------------------
+    // get miner id from args
+    int miner_id;
+    sscanf(argv[1], "%d", &miner_id);
+
+    sprintf(miner_que_name, MQ_MINERS_TEMPLATE_NAME, miner_id);
+    // ----------------------
+
+
+    // generate all mqs
     mqd_t newBlock_mq = mq_open(MQ_NEW_BLOCK_NAME, O_WRONLY);
     mqd_t miner_mq = mq_open(miner_que_name, O_CREAT, S_IRWXU | S_IRWXG, &mqAttr);
     mqd_t connection_mq = mq_open(MQ_CONNECTION_REQUEST_NAME, O_WRONLY);
 
-    MSG_T *msg = malloc(sizeof(MSG_T) + sizeof(BLOCK_MESSAGE));
+    MSG_T *msg = malloc(MQ_MAX_MSG_SIZE);
     printf("Miner %d send CONNECTION_REQUEST with que:%s (%ld)\n", miner_id, miner_que_name, strlen(miner_que_name));
 
     MSG_T *connection_msg;
-    connection_msg = malloc(sizeof(MSG_T) + sizeof(CONNECTION_REQUEST_MESSAGE));
+    connection_msg = malloc(MQ_MAX_MSG_SIZE);
     connection_msg->type = CONNECTION_REQUEST;
     ((CONNECTION_REQUEST_MESSAGE *) connection_msg->data)->id = miner_id;
     strcpy(((CONNECTION_REQUEST_MESSAGE *) connection_msg->data)->que_name, miner_que_name);
@@ -38,7 +43,7 @@ void main(int argc, char **argv) {
 
     printf("CONNECTION_REQUEST masseges in Q: %ld\n", mqAttr.mq_curmsgs);
 
-    //free(connection_msg);
+    free(connection_msg);
 
     for (;;) {
 
