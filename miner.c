@@ -23,7 +23,7 @@ void main(int argc, char **argv) {
     mqd_t newBlock_mq = mq_open(MQ_NEW_BLOCK_NAME, O_WRONLY);
     mqd_t connection_mq = mq_open(MQ_CONNECTION_REQUEST_NAME, O_WRONLY);
 
-    unlink(miner_que_name);
+    mq_unlink(miner_que_name);
     mqd_t miner_mq = mq_open(miner_que_name, O_CREAT, S_IRWXU | S_IRWXG, &mqInitAttr);
 
     CONNECTION_REQUEST_MESSAGE *connection_msg = malloc(MQ_MAX_MSG_SIZE);
