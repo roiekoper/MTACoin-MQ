@@ -20,20 +20,21 @@ void main(int argc, char **argv) {
     mqd_t miner_mq = mq_open(miner_que_name, O_CREAT, S_IRWXU | S_IRWXG, &mqAttr);
     mqd_t connection_mq = mq_open(MQ_CONNECTION_REQUEST_NAME, O_WRONLY);
 
-    MSG_T* msg = malloc(sizeof(MSG_T) + sizeof(BLOCK_MESSAGE));
-    printf("Miner %d send CONNECTION_REQUEST with que:%s (%ld)\n", miner_id, miner_que_name,strlen(miner_que_name));
+    MSG_T *msg = malloc(sizeof(MSG_T) + sizeof(BLOCK_MESSAGE));
+    printf("Miner %d send CONNECTION_REQUEST with que:%s (%ld)\n", miner_id, miner_que_name, strlen(miner_que_name));
 
     MSG_T *connection_msg;
     connection_msg = malloc(sizeof(MSG_T) + sizeof(CONNECTION_REQUEST_MESSAGE));
     connection_msg->type = CONNECTION_REQUEST;
     ((CONNECTION_REQUEST_MESSAGE *) connection_msg->data)->id = miner_id;
-    strcpy(((CONNECTION_REQUEST_MESSAGE *) connection_msg->data)->que_name,miner_que_name);
+    strcpy(((CONNECTION_REQUEST_MESSAGE *) connection_msg->data)->que_name, miner_que_name);
 
-    printf("REQUEST: id:%d, quename: %s\n", ((CONNECTION_REQUEST_MESSAGE *) connection_msg->data)->id,((CONNECTION_REQUEST_MESSAGE *) connection_msg->data)->que_name);
-    
+    printf("REQUEST: id:%d, quename: %s\n", ((CONNECTION_REQUEST_MESSAGE *) connection_msg->data)->id,
+           ((CONNECTION_REQUEST_MESSAGE *) connection_msg->data)->que_name);
+
     mq_send(connection_mq, (char *) connection_msg, MQ_MAX_MSG_SIZE, 0);
-    mq_getattr(connection_mq,&mqAttr);
-    
+    mq_getattr(connection_mq, &mqAttr);
+
 
     printf("CONNECTION_REQUEST masseges in Q: %ld\n", mqAttr.mq_curmsgs);
 
@@ -41,7 +42,7 @@ void main(int argc, char **argv) {
 
     for (;;) {
 
-    //printf("loop CONNECTION_REQUEST masseges in Q: %ld\n", mqAttr.mq_curmsgs);
+        //printf("loop CONNECTION_REQUEST masseges in Q: %ld\n", mqAttr.mq_curmsgs);
         /* Check if there is place in the Q, if yes increment send, if no print error and try again */
         mq_getattr(newBlock_mq, &mqAttr);
 
