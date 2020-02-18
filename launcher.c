@@ -5,7 +5,7 @@ int main() {
     pthread_t wpid, rpid[NUM_OF_MINER];
 
     /* create writer process */
-    wpid = fork();
+    wpid = vfork();
     if (wpid == 0) //Writer
     {
         char *argv[] = {"./build/server.out", 0};
@@ -14,7 +14,7 @@ int main() {
 
     /* Create reader process */
     for (int i = 0; i < NUM_OF_MINER; i++) {
-        rpid[i] = fork();
+        rpid[i] = vfork();
         if (rpid[i] == 0) //Reader
         {
             char miner_index[5];
