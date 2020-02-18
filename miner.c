@@ -23,9 +23,8 @@ void main(int argc, char **argv) {
     mqd_t newBlock_mq = mq_open(MQ_NEW_BLOCK_NAME, O_WRONLY);
     mqd_t connection_mq = mq_open(MQ_CONNECTION_REQUEST_NAME, O_WRONLY);
 
-    unlink(miner_que_name);
+    mq_unlink(miner_que_name);
     mqd_t miner_mq = mq_open(miner_que_name, O_CREAT, S_IRWXU | S_IRWXG, &mqInitAttr);
-
     CONNECTION_REQUEST_MESSAGE *connection_msg = malloc(MQ_MAX_MSG_SIZE);
     connection_msg->id = (unsigned int)miner_id;
     strcpy(connection_msg->que_name, miner_que_name);
@@ -33,7 +32,7 @@ void main(int argc, char **argv) {
     mq_send(connection_mq, (char *) connection_msg, MQ_MAX_MSG_SIZE, 0);
     free(connection_msg);
 
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 500; i++) {
         /* Check if there is place in the Q, to send generated block to server */
         mq_getattr(newBlock_mq, &mqNewBlocktAttr);
 
@@ -43,7 +42,7 @@ void main(int argc, char **argv) {
             /* Check if server sent the latest block in chain */
 
             mq_getattr(miner_mq, &mqNewBlocktAttr);
-            //printf("%s status: %ld\n",miner_que_name, mqNewBlocktAttr.mq_curmsgs);
+            printf("%s status: %ld\n",miner_que_name, mqNewBlocktAttr.mq_curmsgs);
             if (mqNewBlocktAttr.mq_curmsgs > 0) {
                 BLOCK_MESSAGE *msg = malloc(MQ_MAX_MSG_SIZE);
                 mq_receive(miner_mq, (char *) msg, MQ_MAX_MSG_SIZE, NULL);
@@ -51,9 +50,9 @@ void main(int argc, char **argv) {
                 printf("Miner %d: aftre mq_receive: %ld\n", miner_id, mqNewBlocktAttr.mq_curmsgs);
                 printf("Miner %d: Received massege from server\n", miner_id);
                 print_block(msg->block);
+                printf("123\n");
                 BLOCK_T *minerBlockReceived = malloc(sizeof(BLOCK_T));
                 memcpy(minerBlockReceived, msg->block, sizeof(BLOCK_T));
-
                 print_block(minerBlockReceived);
                 minerBlock = generateMinerBlock(minerBlockReceived, miner_id); //get the new block
                 free(msg);
