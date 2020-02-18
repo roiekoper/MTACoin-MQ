@@ -45,18 +45,15 @@ void main(int argc, char **argv) {
             mq_getattr(miner_mq, &mqNewBlocktAttr);
             //printf("%s status: %ld\n",miner_que_name, mqNewBlocktAttr.mq_curmsgs);
             if (mqNewBlocktAttr.mq_curmsgs > 0) {
-                BLOCK_MESSAGE *msg = malloc(MQ_MAX_MSG_SIZE);
-                mq_receive(miner_mq, (char *) msg, MQ_MAX_MSG_SIZE, NULL);
+                BLOCK_T *received_block = (BLOCK_T *)malloc(sizeof(BLOCK_T));
+                mq_receive(miner_mq, (char *) received_block, MQ_MAX_MSG_SIZE, NULL);
                 mq_getattr(miner_mq, &mqNewBlocktAttr);
-                printf("Miner %d: aftre mq_receive: %ld\n", miner_id, mqNewBlocktAttr.mq_curmsgs);
-                printf("Miner %d: Received massege from server\n", miner_id);
-                print_block(msg->block);
-                BLOCK_T *minerBlockReceived = malloc(sizeof(BLOCK_T));
-                memcpy(minerBlockReceived, msg->block, sizeof(BLOCK_T));
+                printf("Miner %d: after mq_receive: %ld\n", miner_id, mqNewBlocktAttr.mq_curmsgs);
+                printf("Miner %d: Received message from server\n", miner_id);
+                print_block(received_block);
 
-                print_block(minerBlockReceived);
-                minerBlock = generateMinerBlock(minerBlockReceived, miner_id); //get the new block
-                free(msg);
+                print_block(received_block);
+                minerBlock = generateMinerBlock(received_block, miner_id); //get the new block
             }
 
             // minerBlock = generateMinerBlock(getpid()); //get the new block
