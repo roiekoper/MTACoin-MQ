@@ -35,9 +35,9 @@ void main() {
             CONNECTION_REQUEST_MESSAGE *rec_msg = malloc(MQ_MAX_MSG_SIZE);
             mq_receive(connection_requests_mq, (char *) rec_msg, MQ_MAX_MSG_SIZE, NULL);
 
-            unsigned int miner_id = ((CONNECTION_REQUEST_MESSAGE *) rec_msg->data)->id;
+            unsigned int miner_id = rec_msg->id;
             char miner_que_name[CHAR_SIZE];
-            strcpy(miner_que_name, ((CONNECTION_REQUEST_MESSAGE *) rec_msg->data)->que_name);
+            strcpy(miner_que_name, rec_msg->que_name);
 
             printf("Server received connection request from miner id %d, queue name %s\n", miner_id, miner_que_name);
 
