@@ -63,17 +63,7 @@ typedef struct connection_request_message{
 }CONNECTION_REQUEST_MESSAGE;
 
 typedef struct block_message{
-    BLOCK_T *block;
+    int num;
 }BLOCK_MESSAGE;
-
-typedef enum{
-    BLOCK,
-    CONNECTION_REQUEST
-} MESSAGE_TYPE_E;
-
-typedef struct msg{
-    MESSAGE_TYPE_E type;
-    char data[]; // Dynamic/flexible array - place holder for unknown size data
-}MSG_T;
 
 #endif
