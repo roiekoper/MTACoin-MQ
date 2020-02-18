@@ -1,9 +1,12 @@
 #include "miner.h"
 
 void main(int argc, char **argv) {
+    int miner_send_request = 0;
     char miner_que_name[CHAR_SIZE] = "/miner_q_";
     struct mq_attr mqInitAttr = {0};
     struct mq_attr mqNewBlocktAttr = {0};
+    BLOCK_T *minerBlock = NULL;
+    BLOCK_T *newBlock = NULL;
 
     /* initialize the queue attributes */
     mqInitAttr.mq_maxmsg = MQ_MAX_SIZE;
@@ -14,7 +17,7 @@ void main(int argc, char **argv) {
     int miner_id;
     sscanf(argv[1], "%d", &miner_id);
     strcat(miner_que_name, argv[1]);
-    printf("Miner strlen(miner_que_name) = %ld %s\n", strlen(miner_que_name), miner_que_name);
+    printf("Miner strlen(miner_que_name) = %ld %s\n", strlen(miner_que_name),miner_que_name);
     // ----------------------
 
 
@@ -25,38 +28,57 @@ void main(int argc, char **argv) {
     unlink(miner_que_name);
     mqd_t miner_mq = mq_open(miner_que_name, O_CREAT, S_IRWXU | S_IRWXG, &mqInitAttr);
     mqd_t mq = mq_open(miner_que_name, O_WRONLY);
+    //print_block(((BLOCK_MESSAGE *) block_chain_msg->data)->block);
 
     mq_send(mq, "aaa", MQ_MAX_MSG_SIZE, 0);
-    mq_send(mq, "aaa", MQ_MAX_MSG_SIZE, 0);
-    mq_send(mq, "aaa", MQ_MAX_MSG_SIZE, 0);
+     mq_send(mq, "aaa", MQ_MAX_MSG_SIZE, 0);
+      mq_send(mq, "aaa", MQ_MAX_MSG_SIZE, 0);
     mq_getattr(mq, &mqNewBlocktAttr);
-    printf("Miner %d Q in %s: %ld \n", miner_id, miner_que_name, mqNewBlocktAttr.mq_curmsgs);
+    printf("Miner %d Q in %s: %ld \n", miner_id, miner_que_name,mqNewBlocktAttr.mq_curmsgs);
 
-    CONNECTION_REQUEST_MESSAGE *connection_msg;
+    MSG_T *connection_msg;
     connection_msg = malloc(MQ_MAX_MSG_SIZE);
+    connection_msg->type = CONNECTION_REQUEST;
     ((CONNECTION_REQUEST_MESSAGE *) connection_msg->data)->id = miner_id;
     strcpy(((CONNECTION_REQUEST_MESSAGE *) connection_msg->data)->que_name, miner_que_name);
+
+    //printf("REQUEST: id:%d, quename: %s\n", ((CONNECTION_REQUEST_MESSAGE *) connection_msg->data)->id,
+           //((CONNECTION_REQUEST_MESSAGE *) connection_msg->data)->que_name);
+
     mq_send(connection_mq, (char *) connection_msg, MQ_MAX_MSG_SIZE, 0);
+
+
+    //printf("CONNECTION_REQUEST masseges in Q: %ld\n", mqAttr.mq_curmsgs);
 
     free(connection_msg);
 
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0;i < 10; i++) {
+
+        
         /* Check if there is place in the Q, to send generated block to server */
         mq_getattr(newBlock_mq, &mqNewBlocktAttr);
-
+        
 
         if (mqNewBlocktAttr.mq_curmsgs == MQ_MAX_SIZE) {
             printf("Queue(%d) reached max number of messages(%ld)\n", newBlock_mq, mqNewBlocktAttr.mq_maxmsg);
         } else {
             /* Check if server sent the latest block in chain */
+
             mq_getattr(miner_mq, &mqNewBlocktAttr);
-            if (mqNewBlocktAttr.mq_curmsgs > 0) {
-                BLOCK_MESSAGE *msg = malloc(MQ_MAX_MSG_SIZE);
-                mq_receive(miner_mq, (char *) msg, MQ_MAX_MSG_SIZE, NULL);
+            //printf("%s status: %ld\n",miner_que_name, mqNewBlocktAttr.mq_curmsgs);
+            if(mqNewBlocktAttr.mq_curmsgs > 0) {
+                MSG_T *msg = malloc(MQ_MAX_MSG_SIZE);
+                mq_receive(miner_mq, (char *) msg, MQ_MAX_MSG_SIZE, NULL); 
                 mq_getattr(miner_mq, &mqNewBlocktAttr);
-                printf("Miner %d: aftre mq_receive: %ld\n", miner_id, mqNewBlocktAttr.mq_curmsgs);
-                printf("Miner %d: Received massege from server\n", miner_id);
-                printf("msg num: %d\n", msg->num);
+                printf("Miner %d: aftre mq_receive: %ld\n",miner_id, mqNewBlocktAttr.mq_curmsgs);
+                printf("Miner %d: Received massege from server\n",miner_id);
+                printf("msg type %d", msg->type == BLOCK);
+                print_block(((BLOCK_MESSAGE*)msg->data)->block);
+                BLOCK_T *minerBlockReceived = malloc(sizeof(BLOCK_T));
+                memcpy(minerBlockReceived, ((BLOCK_MESSAGE*)msg->data)->block, sizeof(BLOCK_T));
+
+                print_block(minerBlockReceived);
+                minerBlock = generateMinerBlock(minerBlockReceived, miner_id); //get the new block
                 free(msg);
             }
 
