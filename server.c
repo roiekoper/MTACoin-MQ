@@ -2,7 +2,6 @@
 
 void main() {
     mqd_t miners_mq[NUM_OF_MINER];
-    char miners_que_names[NUM_OF_MINER][CHAR_SIZE];
     struct mq_attr mq_connection_request_attr = {0};
     struct mq_attr mq_new_block_attr = {0};
 
@@ -27,26 +26,20 @@ void main() {
 
     struct mq_attr mqAttr = {0};
 
-    MSG_T *block_chain_msg = malloc(MQ_MAX_MSG_SIZE);
-    block_chain_msg->type = BLOCK;
-    ((BLOCK_MESSAGE *) block_chain_msg->data)->block = malloc(sizeof(BLOCK_T));
-    memcpy(((BLOCK_MESSAGE *) block_chain_msg->data)->block, block_chain_head->block, sizeof(BLOCK_T));
-
-    //printf("Server generate all ques\n");
+    BLOCK_MESSAGE *block_chain_msg = malloc(MQ_MAX_MSG_SIZE);
+    block_chain_msg->block = malloc(sizeof(BLOCK_T));
+    memcpy(block_chain_msg->block, block_chain_head->block, sizeof(BLOCK_T));
 
     for (;;) {
-        //printf("Server waiting on message ques\n");
         mq_getattr(connection_mq, &mqAttr);
         while (mqAttr.mq_curmsgs > 0) {
 
-            MSG_T *rec_msg = malloc(MQ_MAX_MSG_SIZE);
+            CONNECTION_REQUEST_MESSAGE *rec_msg = malloc(MQ_MAX_MSG_SIZE);
             mq_receive(connection_mq, (char *) rec_msg, MQ_MAX_MSG_SIZE, NULL);
 
-            //printf("Server get CONNECTION_REQUEST message\n");
-
-            unsigned int miner_id = ((CONNECTION_REQUEST_MESSAGE *) rec_msg->data)->id;
+            unsigned int miner_id = rec_msg->id;
             char miner_que_name[CHAR_SIZE];
-            strcpy(miner_que_name, ((CONNECTION_REQUEST_MESSAGE *) rec_msg->data)->que_name);
+            strcpy(miner_que_name, rec_msg->que_name);
 
             printf("Server received connection request from miner id %d, queue name %s\n", miner_id, miner_que_name);
 
@@ -57,20 +50,20 @@ void main() {
             mq_getattr(miners_mq[numberOfConnections], &mqAttr);
             printf("Server send massege to miner %d\n", miner_id);
 
-            printf("Connectin request Q: remaining %ld messages in queue %s\n", mqAttr.mq_curmsgs, miner_que_name);
+            printf("Miners sent new block request Q: remaining %ld messages in queue %s\n", mqAttr.mq_curmsgs, miner_que_name);
             numberOfConnections++;
             free(rec_msg);
         }
 
-        mq_getattr(newBlock_mq, &mqAttr);
-        if (mqAttr.mq_curmsgs > 0) {
-            printf("Server get BLOCK message\n");
-            MSG_T *msg = malloc(MQ_MAX_MSG_SIZE);
-            mq_receive(newBlock_mq, (char *) msg, MQ_MAX_MSG_SIZE, NULL);
-            BLOCK_T *minerBlockReceived = ((BLOCK_MESSAGE *) msg->data)->block;
-            print_block(minerBlockReceived);
-
-        }
+//        mq_getattr(newBlock_mq, &mqAttr);
+//        if (mqAttr.mq_curmsgs > 0) {
+//            printf("Server get BLOCK message\n");
+//            MSG_T *msg = malloc(MQ_MAX_MSG_SIZE);
+//            mq_receive(newBlock_mq, (char *) msg, MQ_MAX_MSG_SIZE, NULL);
+//            BLOCK_T *minerBlockReceived = ((BLOCK_MESSAGE *) msg->data)->block;
+//            print_block(minerBlockReceived);
+//
+//        }
 
 
         // for(int i = 0; i < numberOfConnections; i++){

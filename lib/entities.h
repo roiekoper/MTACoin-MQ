@@ -66,14 +66,4 @@ typedef struct block_message{
     BLOCK_T *block;
 }BLOCK_MESSAGE;
 
-typedef enum{
-    BLOCK,
-    CONNECTION_REQUEST
-} MESSAGE_TYPE_E;
-
-typedef struct msg{
-    MESSAGE_TYPE_E type;
-    char data[]; // Dynamic/flexible array - place holder for unknown size data
-}MSG_T;
-
 #endif
