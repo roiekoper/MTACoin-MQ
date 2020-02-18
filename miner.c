@@ -26,10 +26,9 @@ void main(int argc, char **argv) {
     unlink(miner_que_name);
     mqd_t miner_mq = mq_open(miner_que_name, O_CREAT, S_IRWXU | S_IRWXG, &mqInitAttr);
 
-    CONNECTION_REQUEST_MESSAGE *connection_msg;
-    connection_msg = malloc(MQ_MAX_MSG_SIZE);
-    connection_mq->id = miner_id;
-    strcpy(connection_mq->que_name, miner_que_name);
+    CONNECTION_REQUEST_MESSAGE *connection_msg = malloc(MQ_MAX_MSG_SIZE);
+    connection_msg->id = (unsigned int)miner_id;
+    strcpy(connection_msg->que_name, miner_que_name);
 
     mq_send(connection_mq, (char *) connection_msg, MQ_MAX_MSG_SIZE, 0);
     free(connection_msg);
