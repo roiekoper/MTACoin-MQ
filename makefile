@@ -46,7 +46,7 @@ print:
 	@echo LS_SO: $(LS_SO)
 	@echo UTILS_SO: $(UTILS_SO)
 	@echo $(shell $LD_LIBRARY_PATH)
-	#@echo BLOCK_CHAIN_SO: $(BLOCK_CHAIN_SO)
+	@echo BLOCK_CHAIN_SO: $(BLOCK_CHAIN_SO)
 	@echo MAIN_O: $(MAIN_O)
 	@echo SERVER_O: $(SERVER_O)
 	@echo MINER_O: $(MINER_O)
@@ -54,24 +54,25 @@ print:
 	@echo LAUNCHER-RUN-COMMAND: $(CC) -L$(LIBS_PATH) $^ -o $@ $(SO_LIBS) -l$(UTILS)
 
 run:
-	./$(LAUNCHER_O)
+	sudo ./$(LAUNCHER_O)
 
 $(SO_DIR)/$(LS).so: $(LIB)/$(LS).c
 	#mkdir -p $(O_DIR)
 	mkdir -p $(SO_DIR)
 	$(CC) $(CFLAGS) $^ -o $(subst $(LS),lib$(LS),$@) $(SO_LIBS)
+	export LD_LIBRARY_PATH=$(LIBS_PATH);
 
 $(SO_DIR)/$(UTILS).so: $(LIB)/$(UTILS).c
 	$(CC) $(CFLAGS) -L$(LIBS_PATH) $^ -o $(subst $(UTILS),lib$(UTILS),$@) $(SO_LIBS) -l$(LS)
 
 $(SO_DIR)/$(BLOCK_CHAIN).so: $(LIB)/$(BLOCK_CHAIN).c
-	$(CC) $(CFLAGS) $(LIBS_PATH) $^ -o $(subst $(BLOCK_CHAIN),lib$(BLOCK_CHAIN),$@) -l$(SERVER) -l$(MINER)
+	$(CC) $(CFLAGS) -L$(LIBS_PATH) $^ -o $(subst $(BLOCK_CHAIN),lib$(BLOCK_CHAIN),$@) -l$(SERVER) -l$(MINER)
 
-$(O_DIR)/$(LAUNCHER).out: $(LAUNCHER).c
-	$(CC_EXPORT) -L$(LIBS_PATH) $^ -o $@ $(SO_LIBS) -l$(UTILS)
+$(O_DIR)$(LAUNCHER).out: $(LAUNCHER).c
+	$(CC) $^ -o $@
 
 $(O_DIR)/$(SERVER).out: $(SERVER).c
-	$(CC_EXPORT) -L$(LIBS_PATH) $^ -o $@ $(SO_LIBS) -l$(UTILS)
+	$(CC) -L$(LIBS_PATH) $^ -o $@ $(SO_LIBS) -l$(UTILS)
 
 $(O_DIR)/$(MINER).out: $(MINER).c
-	$(CC_EXPORT) -L$(LIBS_PATH) $^ -o $@ $(SO_LIBS) -l$(UTILS)
+	$(CC) -L$(LIBS_PATH) $^ -o $@ $(SO_LIBS) -l$(UTILS)

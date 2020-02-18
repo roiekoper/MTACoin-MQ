@@ -18,9 +18,7 @@ void main() {
     mq_unlink(MQ_NEW_BLOCK_NAME);
     mqd_t newBlock_mq = mq_open(MQ_NEW_BLOCK_NAME, O_RDONLY);
     
-    struct mq_attr mqConnectionAttr = {0};
-    struct mq_attr mqMinersAttr = {0};
-    struct mq_attr mqNewBlockAtt = {0};
+    struct mq_attr mqAttr = {0};
 
     MSG_T* msg = malloc(MQ_MAX_MSG_SIZE); // Allocate big size in advance
 
@@ -42,12 +40,12 @@ void main() {
     for (;;) {
         //printf("Server waiting on message ques\n");
 
-        mq_getattr(connection_mq, &mqConnectionAttr);
-        if(mqConnectionAttr.mq_curmsgs > 0){
+        mq_getattr(connection_mq, &mqAttr);
+        while (mqAttr.mq_curmsgs > 0){
             
             mq_receive(connection_mq, (char *) msg, MQ_MAX_MSG_SIZE, NULL); 
             
-            printf("Server get CONNECTION_REQUEST message: %s\n",&msg);
+            printf("Server get CONNECTION_REQUEST message\n");
             
 
             unsigned int miner_id = ((CONNECTION_REQUEST_MESSAGE*)msg->data)->id;
@@ -62,12 +60,12 @@ void main() {
 
             printf("Server send massege to miner %d\n", miner_id);
 
-            printf("Connectin request Q: remaining %ld messages in queue\n", mqConnectionAttr.mq_curmsgs);
+            printf("Connectin request Q: remaining %ld messages in queue\n", mqAttr.mq_curmsgs);
             numberOfConnections++;
         }
 
-        mq_getattr(newBlock_mq, &mqNewBlockAtt);
-        if(mqNewBlockAtt.mq_curmsgs > 0){
+        mq_getattr(newBlock_mq, &mqAttr);
+        if(mqAttr.mq_curmsgs > 0){
             printf("Server get BLOCK message\n");
             mq_receive(newBlock_mq, (char *) msg, MQ_MAX_MSG_SIZE, NULL); 
             BLOCK_T *minerBlockReceived = ((BLOCK_MESSAGE*)msg->data)->block;
