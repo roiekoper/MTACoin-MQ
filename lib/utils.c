@@ -28,6 +28,12 @@ void print_block(BLOCK_T *block)
            block->difficulty, block->nonce);
 }
 
+void generateMask()
+{
+    int gen_mask = 0xffffffff;
+    mask = gen_mask << NUM_OF_ZERO;
+}
+
 void print_list()
 {
     NODE_T *current = block_chain_head->prev;

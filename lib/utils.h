@@ -12,5 +12,6 @@
 unsigned long generateHashFromBlock(BLOCK_T *block);
 void print_block(BLOCK_T *block);
 void delete_list();
+void generateMask();
 
 #endif //BITCOIN_UTILS_H

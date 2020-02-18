@@ -11,6 +11,7 @@ int numberOfConnections = 0;
 
 void createMinersMessageQues();
 void createServerBlocksMessageQues();
+void updateAllMinersQues(int numberOfConnections, mqd_t *miners_mq );
 //void *server(void *pVoid);
 void generateInitBlock();
 //int isLegalBlock(BLOCK_T *serverBlock);

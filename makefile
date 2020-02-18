@@ -38,7 +38,7 @@ SERVER_O := $(addprefix $(O_DIR)/,$(patsubst %.c,%.out,$(subst ./,,$(shell find 
 MINER_O := $(addprefix $(O_DIR)/,$(patsubst %.c,%.out,$(subst ./,,$(shell find . -name "$(MINER).c"))))
 
 all: $(LS_SO) $(UTILS_SO) $(SERVER_O) $(MINER_O) $(LAUNCHER_O)
-	#sudo mv $(LIBS_PATH)/* /usr/lib
+	sudo mv $(LIBS_PATH)/* /usr/lib
     #@echo SRCS: $(SRCS)
     #@echo OBJS: $(OBJS)
 

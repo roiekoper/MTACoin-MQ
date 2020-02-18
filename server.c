@@ -23,10 +23,13 @@ void main() {
     mqd_t newBlock_mq = mq_open(MQ_NEW_BLOCK_NAME, O_CREAT, S_IRWXU | S_IRWXG, &mq_new_block_attr);
 
     //printf("Server generate all ques\n");
+    generateMask();
 
     struct mq_attr mqAttr = {0};
     for (;;) {
         mq_getattr(connection_mq, &mqAttr);
+         //printf("Server connections mq message %ld\n", mqAttr.mq_curmsgs);
+            
         while (mqAttr.mq_curmsgs > 0) {
 
             CONNECTION_REQUEST_MESSAGE *rec_msg = (CONNECTION_REQUEST_MESSAGE *)malloc(sizeof(CONNECTION_REQUEST_MESSAGE));
@@ -50,35 +53,28 @@ void main() {
             printf("Server: %s after server sent message %ld\n", miner_que_name, mqAttr.mq_curmsgs);
             numberOfConnections++;
             free(rec_msg);
+            mq_getattr(connection_mq, &mqAttr);
         }
 
-//        mq_getattr(newBlock_mq, &mqAttr);
-//        if (mqAttr.mq_curmsgs > 0) {
-//            printf("Server get BLOCK message\n");
-//            MSG_T *msg = malloc(MQ_MAX_MSG_SIZE);
-//            mq_receive(newBlock_mq, (char *) msg, MQ_MAX_MSG_SIZE, NULL);
-//            BLOCK_T *minerBlockReceived = ((BLOCK_MESSAGE *) msg->data)->block;
-//            print_block(minerBlockReceived);
-//
-//        }
-
-
-        // for(int i = 0; i < numberOfConnections; i++){
-
-        //     mq_getattr(miners_mq[i], &mqMinersAttr);
-
-        //     if(mqMinersAttr.mq_curmsgs > 0) {
-        //         mq_receive(miners_mq[i], (char *) msg, MQ_MAX_MSG_SIZE, NULL);
-        //         printf("Server get BLOCK message\n");
-        //         BLOCK_T *minerBlockReceived = ((BLOCK_MESSAGE*)msg->data)->block;
-        //         print_block(minerBlockReceived);
-        //         printf("MINER QUE ID(#%u): remaining %ld messages in queue\n", i, mqMinersAttr.mq_curmsgs);
-
-
-        //     }
-
-        // }
+       mq_getattr(newBlock_mq, &mqAttr);
+       if (mqAttr.mq_curmsgs > 0) {
+           printf("Server get BLOCK message\n");
+           BLOCK_T *minded_block = malloc(sizeof(BLOCK_T));
+           mq_receive(newBlock_mq, (char *) minded_block, MQ_MAX_MSG_SIZE, NULL);
+           print_block(minded_block);
+           push(&block_chain_head, minded_block);
+           free(minded_block);
+           updateAllMinersQues(numberOfConnections, miners_mq);
+       }
     }
+}
+
+void updateAllMinersQues(int numberOfConnections, mqd_t *miners_mq ){
+    BLOCK_T *blockToSend = block_chain_head->block;
+
+     for(int i = 0; i < numberOfConnections; i++){
+            mq_send(miners_mq[numberOfConnections], (char *) blockToSend, MQ_MAX_MSG_SIZE, 0);
+        }
 }
 
 void createMinersMessageQues() {

@@ -9,7 +9,7 @@
 
 
 void updateMinerBlock(BLOCK_T *minerBlock);
-BLOCK_T *generateMinerBlock(BLOCK_T *blockChain, int relayed_by);
+void generateMinerBlock(BLOCK_T *minerBlock, BLOCK_T *blockChain, int relayed_by);
 //void *miner(int *thread_id);
 //void *badMiner(int *thread_id);
 
