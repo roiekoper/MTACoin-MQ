@@ -10,7 +10,7 @@ SO_LIBS = -lpthread -lz -lrt
 LIB = lib
 DELETE_LIB = ./$(LIB)/
 O_DIR = build
-SO_DIR = $(O_DIR)/so
+SO_DIR = /usr/lib
 
 #files names
 LS = linkedList
@@ -60,22 +60,18 @@ clean:
 	rm -r $(O_DIR)
 
 $(SO_DIR)/$(LS).so: $(LIB)/$(LS).c
-	#mkdir -p $(O_DIR)
-	mkdir -p $(SO_DIR)
+	mkdir -p $(O_DIR)
 	$(CC) $(CFLAGS) $^ -o $(subst $(LS),lib$(LS),$@) $(SO_LIBS)
-	export LD_LIBRARY_PATH=$(LIBS_PATH);
+	
 
 $(SO_DIR)/$(UTILS).so: $(LIB)/$(UTILS).c
-	$(CC) $(CFLAGS) -L$(LIBS_PATH) $^ -o $(subst $(UTILS),lib$(UTILS),$@) $(SO_LIBS) -l$(LS)
-
-$(SO_DIR)/$(BLOCK_CHAIN).so: $(LIB)/$(BLOCK_CHAIN).c
-	$(CC) $(CFLAGS) -L$(LIBS_PATH) $^ -o $(subst $(BLOCK_CHAIN),lib$(BLOCK_CHAIN),$@) -l$(SERVER) -l$(MINER)
+	$(CC) $(CFLAGS) $^ -o $(subst $(UTILS),lib$(UTILS),$@) $(SO_LIBS) -l$(LS)
 
 $(O_DIR)/$(LAUNCHER).out: $(LAUNCHER).c
 	$(CC) -L$(LIBS_PATH) $^ -o $@ $(SO_LIBS)
 
 $(O_DIR)/$(SERVER).out: $(SERVER).c
-	$(CC_EXPORT) -L$(LIBS_PATH) $^ -o $@ $(SO_LIBS) -l$(UTILS) -l$(LS)
+	$(CC_EXPORT)  $^ -o $@ $(SO_LIBS) -l$(UTILS) -l$(LS)
 
 $(O_DIR)/$(MINER).out: $(MINER).c
 	$(CC_EXPORT) -L$(LIBS_PATH) $^ -o $@ $(SO_LIBS) -l$(UTILS) -l$(LS)

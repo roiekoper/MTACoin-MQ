@@ -95,7 +95,7 @@ BLOCK_T *generateMinerBlock(BLOCK_T *blockChain, int relayed_by) {
     new_block->prev_hash = blockChain->hash; // dummy prev hash
     new_block->hash = -1;                                 // dummy hash
     new_block->difficulty = NUM_OF_ZERO;
-    return new_block;
+            return new_block;
 }
 
 
