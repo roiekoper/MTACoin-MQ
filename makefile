@@ -56,6 +56,9 @@ print:
 run:
 	sudo ./$(LAUNCHER_O)
 
+clean:
+	rm -r $(O_DIR)
+
 $(SO_DIR)/$(LS).so: $(LIB)/$(LS).c
 	#mkdir -p $(O_DIR)
 	mkdir -p $(SO_DIR)
@@ -65,7 +68,7 @@ $(SO_DIR)/$(LS).so: $(LIB)/$(LS).c
 $(SO_DIR)/$(UTILS).so: $(LIB)/$(UTILS).c
 	$(CC) $(CFLAGS) -L$(LIBS_PATH) $^ -o $(subst $(UTILS),lib$(UTILS),$@) $(SO_LIBS) -l$(LS)
 
-$(SO_DIR)/$(BLOCK_CHAIN).so: $(LIB)/$(BLOCK_CHAIN).c
+$(SO_DIR)/$(BLOCK_CHAIN3w4).so: $(LIB)/$(BLOCK_CHAIN).c
 	$(CC) $(CFLAGS) -L$(LIBS_PATH) $^ -o $(subst $(BLOCK_CHAIN),lib$(BLOCK_CHAIN),$@) -l$(SERVER) -l$(MINER)
 
 $(O_DIR)$(LAUNCHER).out: $(LAUNCHER).c
