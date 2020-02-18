@@ -11,7 +11,7 @@ void main(int argc, char **argv) {
 
     // ----------------------
     // get miner id from args
-    unsigned int miner_id;
+    int miner_id;
     sscanf(argv[1], "%d", &miner_id);
     strcat(miner_que_name, argv[1]);
     printf("Miner strlen(miner_que_name) = %ld %s\n", strlen(miner_que_name), miner_que_name);
@@ -34,8 +34,8 @@ void main(int argc, char **argv) {
 
     CONNECTION_REQUEST_MESSAGE *connection_msg;
     connection_msg = malloc(MQ_MAX_MSG_SIZE);
-    connection_msg->id = miner_id;
-    strcpy(connection_msg->que_name, miner_que_name);
+    ((CONNECTION_REQUEST_MESSAGE *) connection_msg->data)->id = miner_id;
+    strcpy(((CONNECTION_REQUEST_MESSAGE *) connection_msg->data)->que_name, miner_que_name);
     mq_send(connection_mq, (char *) connection_msg, MQ_MAX_MSG_SIZE, 0);
 
     free(connection_msg);
