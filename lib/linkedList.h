@@ -6,7 +6,7 @@
 
 #include "entities.h"
 
-void push(NODE_T **head, BLOCK_T *new_block);
+void push(NODE_T **head, BLOCK_T *new_block, NODE_T *temp_block);
 BLOCK_T *get_last_block(NODE_T *head);
 
 #endif

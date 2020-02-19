@@ -62,19 +62,38 @@ void main() {
            BLOCK_T *minded_block = malloc(sizeof(BLOCK_T));
            mq_receive(newBlock_mq, (char *) minded_block, MQ_MAX_MSG_SIZE, NULL);
            print_block(minded_block);
-           push(&block_chain_head, minded_block);
-           free(minded_block);
-           updateAllMinersQues(numberOfConnections, miners_mq);
+
+           NODE_T *new_head = (NODE_T*) malloc(sizeof(NODE_T));
+           push(&block_chain_head, minded_block, new_head);
+           //free(minded_block);
+
+
+        //    BLOCK_T *temp_block = malloc(sizeof(BLOCK_T));
+        //    temp_block = block_chain_head->block;
+            printf("How much connections %d \n",numberOfConnections);
+            print_block_with_message(block_chain_head->block, "SERVER WILL SEND THIS BLOCK: ");
+
+            for(int i = 0; i < numberOfConnections; i++){
+                mq_getattr(miners_mq[i], &mqAttr);
+                printf("Server: size of miners_mq_%d: %ld\n", i, mqAttr.mq_curmsgs);
+                sendBlockToMinerQue(&(miners_mq[i]));
+            }
        }
     }
 }
 
-void updateAllMinersQues(int numberOfConnections, mqd_t *miners_mq ){
+void sendBlockToMinerQue(mqd_t *miner_mq ){
     BLOCK_T *blockToSend = block_chain_head->block;
 
-     for(int i = 0; i < numberOfConnections; i++){
-            mq_send(miners_mq[numberOfConnections], (char *) blockToSend, MQ_MAX_MSG_SIZE, 0);
-        }
+    mq_send(*miner_mq, (char *) blockToSend, MQ_MAX_MSG_SIZE, 0);
+}
+
+
+void print_block_with_message(BLOCK_T *block, char * message)
+{
+    printf("%s, height(%d), timestamp(%d), hash(0x%08x), prev_hash(0x%08x), difficulty(%d), nonce(%d)\n",
+    message, block->height, block->timestamp, (unsigned int)block->hash, (unsigned int)block->prev_hash,
+           block->difficulty, block->nonce);
 }
 
 void createMinersMessageQues() {
