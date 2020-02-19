@@ -1,6 +1,7 @@
 #include "server.h"
 
-void main() {
+void main()
+{
     mqd_t miners_mq[NUM_OF_MINER];
     struct mq_attr mq_connection_request_attr = {0};
     struct mq_attr mq_new_block_attr = {0};
@@ -26,14 +27,16 @@ void main() {
     generateMask();
 
     struct mq_attr mqAttr = {0};
-    for (;;) {
+    for (;;)
+    {
         mq_getattr(connection_mq, &mqAttr);
-         //printf("Server connections mq message %ld\n", mqAttr.mq_curmsgs);
-            
-        while (mqAttr.mq_curmsgs > 0) {
+        //printf("Server connections mq message %ld\n", mqAttr.mq_curmsgs);
+
+        while (mqAttr.mq_curmsgs > 0)
+        {
 
             CONNECTION_REQUEST_MESSAGE *rec_msg = (CONNECTION_REQUEST_MESSAGE *)malloc(sizeof(CONNECTION_REQUEST_MESSAGE));
-            mq_receive(connection_mq, (char *) rec_msg, MQ_MAX_MSG_SIZE, NULL);
+            mq_receive(connection_mq, (char *)rec_msg, MQ_MAX_MSG_SIZE, NULL);
 
             unsigned int miner_id = rec_msg->id;
             char miner_que_name[CHAR_SIZE];
@@ -41,89 +44,50 @@ void main() {
 
             printf("Server received connection request from miner id %d, queue name %s\n", miner_id, miner_que_name);
 
+            free(rec_msg);
+
             miners_mq[numberOfConnections] = mq_open(miner_que_name, O_WRONLY);
 
-            BLOCK_T *blockToSend = block_chain_head->block;
             //print_block(blockToSend);
-            mq_send(miners_mq[numberOfConnections], (char *) blockToSend, MQ_MAX_MSG_SIZE, 0);
+            sendBlock(&(miners_mq[numberOfConnections]), block_chain_head->block, "server block to send");
 
             mq_getattr(miners_mq[numberOfConnections], &mqAttr);
             printf("Server send massege to miner %d\n", miner_id);
 
-            printf("Server: %s after server sent message %ld\n", miner_que_name, mqAttr.mq_curmsgs);
             numberOfConnections++;
-            free(rec_msg);
             mq_getattr(connection_mq, &mqAttr);
         }
 
-       mq_getattr(newBlock_mq, &mqAttr);
-       if (mqAttr.mq_curmsgs > 0) {
-           printf("Server get BLOCK message\n");
-           BLOCK_T *minded_block = malloc(sizeof(BLOCK_T));
-           mq_receive(newBlock_mq, (char *) minded_block, MQ_MAX_MSG_SIZE, NULL);
-           print_block(minded_block);
+        mq_getattr(newBlock_mq, &mqAttr);
+        if (mqAttr.mq_curmsgs > 0)
+        {
+            printf("Server get BLOCK message\n");
+            checkAndUpdateBlockChainHead(&newBlock_mq);
 
-           NODE_T *new_head = (NODE_T*) malloc(sizeof(NODE_T));
-           push(&block_chain_head, minded_block, new_head);
-           //free(minded_block);
-
-
-        //    BLOCK_T *temp_block = malloc(sizeof(BLOCK_T));
-        //    temp_block = block_chain_head->block;
-            printf("How much connections %d \n",numberOfConnections);
-            print_block_with_message(block_chain_head->block, "SERVER WILL SEND THIS BLOCK: ");
-
-            for(int i = 0; i < numberOfConnections; i++){
+            for (int i = 0; i < numberOfConnections; i++)
+            {
                 mq_getattr(miners_mq[i], &mqAttr);
                 printf("Server: size of miners_mq_%d: %ld\n", i, mqAttr.mq_curmsgs);
-                sendBlockToMinerQue(&(miners_mq[i]));
+                sendBlock(&(miners_mq[i]), block_chain_head->block, "server block to send");
             }
-       }
+        }
     }
 }
 
-void sendBlockToMinerQue(mqd_t *miner_mq ){
-    BLOCK_T *blockToSend = block_chain_head->block;
-
-    mq_send(*miner_mq, (char *) blockToSend, MQ_MAX_MSG_SIZE, 0);
-}
-
-
-void print_block_with_message(BLOCK_T *block, char * message)
+void *checkAndUpdateBlockChainHead(mqd_t *newBlock_mq)
 {
-    printf("%s, height(%d), timestamp(%d), hash(0x%08x), prev_hash(0x%08x), difficulty(%d), nonce(%d)\n",
-    message, block->height, block->timestamp, (unsigned int)block->hash, (unsigned int)block->prev_hash,
-           block->difficulty, block->nonce);
-}
+    BLOCK_T *minded_block = malloc(sizeof(BLOCK_T));
+    // TODO sucss to malloc here
+    receiveBlock(newBlock_mq, minded_block, "server in receiveBlock() ");
 
-void createMinersMessageQues() {
-    for (int i = 0; i < NUM_OF_MINER; i++) {
-        mqd_t mq;
-        struct mq_attr attr = {0};
-        char que_name[CHAR_SIZE];
-
-        /* initialize the queue attributes */
-        attr.mq_maxmsg = MQ_MAX_SIZE;
-        attr.mq_msgsize = MQ_MAX_MSG_SIZE;
-
-        /* create the message queue and close(not delete) it immidiatly as it will be used only by children */
-        sprintf(que_name, MQ_MINERS_TEMPLATE_NAME, i);
-        mq_unlink(que_name); // delete first if already exists, this requires sudo privilege
-        mq = mq_open(que_name, O_CREAT, S_IRWXU | S_IRWXG, &attr);
+    if (isLegalBlock(minded_block))
+    {
+        NODE_T *new_head = (NODE_T *)malloc(sizeof(NODE_T));
+        push(&block_chain_head, minded_block, new_head);
+        print_block_with_message(block_chain_head->block, "SERVER CHANGED HEAD WITH THIS BLOCK: ");
     }
-}
 
-void createServerBlocksMessageQues() {
-    mqd_t mq_server;
-    struct mq_attr server_attr = {0};
-
-    /* initialize the queue attributes */
-    server_attr.mq_maxmsg = MQ_MAX_SIZE;
-    server_attr.mq_msgsize = MQ_MAX_MSG_SIZE;
-
-    /* create the message queue and close(not delete) it immidiatly as it will be used only by children */
-    //mq_unlink(MQ_SERVER_NAME); // delete first if already exists, this requires sudo privilege
-    //mq_server = mq_open(MQ_SERVER_NAME, O_CREAT, S_IRWXU | S_IRWXG, &server_attr);
+    print_block_with_message(block_chain_head->block, "SERVER WILL SEND THIS BLOCK: ");
 }
 
 //void *server(void *pVoid)
@@ -167,12 +131,13 @@ void createServerBlocksMessageQues() {
 //    //delete_list();
 //}
 //
-void generateInitBlock() {
+void generateInitBlock()
+{
 
     NODE_T *head_node_list = malloc(sizeof(NODE_T));
     BLOCK_T *first_block = malloc(sizeof(BLOCK_T));
     first_block->height = 0;
-    first_block->timestamp = (int) time(NULL); // current time in seconds
+    first_block->timestamp = (int)time(NULL); // current time in seconds
     first_block->relayed_by = -1;             // server id
     first_block->nonce = 0;                   // dummy nonce
     first_block->prev_hash = 0;               // dummy prev hash
@@ -184,30 +149,30 @@ void generateInitBlock() {
     block_chain_head = head_node_list; // init head of list
 }
 
-//int isLegalBlock(BLOCK_T *serverBlock)
-//{
-//    unsigned long hash = generateHashFromBlock(serverBlock);
-//    if (hash != serverBlock->hash)
-//
-//    {
-//        printf("Server: Wrong hash for block #%d by miner #%d, received %08x but calculate %08x\n", serverBlock->height,
-//               serverBlock->relayed_by, (unsigned int)serverBlock->hash, (unsigned int)hash);
-//        return 0;
-//    }
-//
-//    if ((serverBlock->hash & mask) != 0)
-//    {
-//        printf("Server: Wrong hash difficulty for block #%d by miner #%d, received %08x \n", serverBlock->height,
-//               serverBlock->relayed_by, (unsigned int)serverBlock->hash);
-//        return 0;
-//    }
-//    int height = block_chain_head->block->height;
-//    if (height + 1 != serverBlock->height)
-//    {
-//        printf("Server: Wrong height for block by miner #%d, received %d but supposed to be %d\n", serverBlock->relayed_by,
-//               serverBlock->height, height + 1);
-//        return 0;
-//    }
-//
-//    return 1;
-//}
+int isLegalBlock(BLOCK_T *serverBlock)
+{
+    unsigned long hash = generateHashFromBlock(serverBlock);
+    if (hash != serverBlock->hash)
+
+    {
+        printf("Server: Wrong hash for block #%d by miner #%d, received %08x but calculate %08x\n", serverBlock->height,
+               serverBlock->relayed_by, (unsigned int)serverBlock->hash, (unsigned int)hash);
+        return 0;
+    }
+
+    if ((serverBlock->hash & mask) != 0)
+    {
+        printf("Server: Wrong hash difficulty for block #%d by miner #%d, received %08x \n", serverBlock->height,
+               serverBlock->relayed_by, (unsigned int)serverBlock->hash);
+        return 0;
+    }
+    int height = block_chain_head->block->height;
+    if (height + 1 != serverBlock->height)
+    {
+        printf("Server: Wrong height for block by miner #%d, received %d but supposed to be %d\n", serverBlock->relayed_by,
+               serverBlock->height, height + 1);
+        return 0;
+    }
+
+    return 1;
+}

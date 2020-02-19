@@ -13,5 +13,7 @@ unsigned long generateHashFromBlock(BLOCK_T *block);
 void print_block(BLOCK_T *block);
 void delete_list();
 void generateMask();
-
+void sendBlock( mqd_t *mq, BLOCK_T *block, char *message);
+void receiveBlock(mqd_t *mq, BLOCK_T *block,  char *message);
+void print_block_with_message(BLOCK_T *block, char *message);
 #endif //BITCOIN_UTILS_H

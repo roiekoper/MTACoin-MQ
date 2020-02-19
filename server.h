@@ -9,11 +9,9 @@
 
 int numberOfConnections = 0;
 
-void createMinersMessageQues();
-void createServerBlocksMessageQues();
-void sendBlockToMinerQue(mqd_t *miner_mq );
 //void *server(void *pVoid);
 void generateInitBlock();
-//int isLegalBlock(BLOCK_T *serverBlock);
+int isLegalBlock(BLOCK_T *serverBlock);
+void *checkAndUpdateBlockChainHead(mqd_t *newBlock_mq);
 
 #endif //BITCOIN_SERVER_H

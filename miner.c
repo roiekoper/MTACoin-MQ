@@ -53,8 +53,8 @@ void main(int argc, char **argv)
             if (mqMinertAttr.mq_curmsgs > 0)
             {
                 BLOCK_T *received_block = (BLOCK_T *)malloc(sizeof(BLOCK_T));
+                receiveBlock(&miner_mq, received_block, "miner in receiveBlock() ");
 
-                mq_receive(miner_mq, (char *)received_block, MQ_MAX_MSG_SIZE, NULL);
                 mq_getattr(miner_mq, &mqMinertAttr);
                 printf("Miner %d: after mq_receive: %ld\n", miner_id, mqMinertAttr.mq_curmsgs);
                 printf("Miner %d: Received message from server\n", miner_id);
@@ -69,18 +69,13 @@ void main(int argc, char **argv)
             {
                 if (((minerBlock.hash & mask) == 0))
                 {
-                    BLOCK_T *newBlock = malloc(sizeof(BLOCK_T));
-                    memcpy(newBlock, &minerBlock, sizeof(BLOCK_T));
                     //newBlock = minerBlock;
                     printf("Miner #%d: Mined a new block #%d, with the hash 0x%08x\n", minerBlock.relayed_by,
                            minerBlock.height,
                            (unsigned int)minerBlock.hash);
-                    printf("#Before ques: %ld\n", mqNewBlocktAttr.mq_curmsgs);
-                    mq_send(newBlock_mq, (char *)newBlock, MQ_MAX_MSG_SIZE, 0);
-                    mq_getattr(newBlock_mq, &mqNewBlocktAttr);
-                    printf("#After ques: %ld\n", mqNewBlocktAttr.mq_curmsgs);
+                    sendBlock(&newBlock_mq, &minerBlock, "miner block to send");
 
-                    free(newBlock);
+                    mq_getattr(newBlock_mq, &mqNewBlocktAttr);
 
                     // // waiting to new approved block by the server
                     //  BLOCK_T *newBlock2 = malloc(sizeof(BLOCK_T));
@@ -97,7 +92,6 @@ void main(int argc, char **argv)
                 else
                 {
                     updateMinerBlock(&minerBlock);
-                    print_block(&minerBlock);
                 }
             }
         }

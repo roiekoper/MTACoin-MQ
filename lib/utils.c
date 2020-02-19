@@ -50,3 +50,34 @@ void print_list()
         current = current->prev;
     }
 }
+
+void sendBlock(mqd_t *mq, BLOCK_T *block, char *message)
+{
+    BLOCK_T *blockToSend = malloc(sizeof(BLOCK_T));
+    memcpy(blockToSend, block, sizeof(BLOCK_T));
+
+    print_block_with_message(blockToSend, message);
+    mq_send(*mq, (char *)blockToSend, MQ_MAX_MSG_SIZE, 0);
+    free(blockToSend);
+}
+
+void receiveBlock(mqd_t *mq, BLOCK_T *block, char *message)
+{
+    // TODO miner minded good block, sent to server, server dosent succuss to receive the second block from the miner
+    printf("0\n");
+    BLOCK_T *received_block = (BLOCK_T *)malloc(sizeof(BLOCK_T));
+    printf("1\n");
+    mq_receive(*mq, (char *)received_block, MQ_MAX_MSG_SIZE, NULL);
+    printf("2\n");
+    print_block_with_message(received_block, message);
+    memcpy(block, received_block, sizeof(BLOCK_T));
+    printf("3\n");
+    free(received_block);
+}
+
+void print_block_with_message(BLOCK_T *block, char *message)
+{
+    printf("%s, height(%d), timestamp(%d), hash(0x%08x), prev_hash(0x%08x), difficulty(%d), nonce(%d)\n",
+           message, block->height, block->timestamp, (unsigned int)block->hash, (unsigned int)block->prev_hash,
+           block->difficulty, block->nonce);
+}
