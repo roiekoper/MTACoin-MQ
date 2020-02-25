@@ -51,25 +51,23 @@ void print_list()
     }
 }
 
-void sendBlock(mqd_t *mq, BLOCK_T *block, char *message)
+void sendBlock(mqd_t *mq, BLOCK_T *block)
 {
     BLOCK_T *blockToSend = malloc(sizeof(BLOCK_T));
     memcpy(blockToSend, block, sizeof(BLOCK_T));
 
-    print_block_with_message(blockToSend, message);
     mq_send(*mq, (char *)blockToSend, MQ_MAX_MSG_SIZE, 0);
     free(blockToSend);
 }
 
-void receiveBlock(mqd_t *mq, BLOCK_T *block, char *message)
+void receiveBlock(mqd_t *mq, BLOCK_T *block)
 {
     mq_receive(*mq, (char *)block, MQ_MAX_MSG_SIZE, NULL);
-    print_block_with_message(block, message);
 }
 
 void print_block_with_message(BLOCK_T *block, char *message)
 {
-    printf("%s, height(%d), timestamp(%d), hash(0x%08x), prev_hash(0x%08x), difficulty(%d), nonce(%d)\n",
+    printf("%s height(%d), timestamp(%d), hash(0x%08x), prev_hash(0x%08x), difficulty(%d), nonce(%d)\n",
            message, block->height, block->timestamp, (unsigned int)block->hash, (unsigned int)block->prev_hash,
            block->difficulty, block->nonce);
 }

@@ -18,7 +18,7 @@ int main() {
         if (rpid[i] == 0) //Reader
         {
             char miner_index[5];
-            sprintf(miner_index, "%d", i);
+            sprintf(miner_index, "%d", i + 1);
 
             char *argv[] = {"./build/miner.out", miner_index, NULL};
             execv("./build/miner.out", argv);
