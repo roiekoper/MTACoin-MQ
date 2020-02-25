@@ -63,16 +63,8 @@ void sendBlock(mqd_t *mq, BLOCK_T *block, char *message)
 
 void receiveBlock(mqd_t *mq, BLOCK_T *block, char *message)
 {
-    // TODO miner minded good block, sent to server, server dosent succuss to receive the second block from the miner
-    printf("0\n");
-    BLOCK_T *received_block = (BLOCK_T *)malloc(sizeof(BLOCK_T));
-    printf("1\n");
-    mq_receive(*mq, (char *)received_block, MQ_MAX_MSG_SIZE, NULL);
-    printf("2\n");
-    print_block_with_message(received_block, message);
-    memcpy(block, received_block, sizeof(BLOCK_T));
-    printf("3\n");
-    free(received_block);
+    mq_receive(*mq, (char *)block, MQ_MAX_MSG_SIZE, NULL);
+    print_block_with_message(block, message);
 }
 
 void print_block_with_message(BLOCK_T *block, char *message)
