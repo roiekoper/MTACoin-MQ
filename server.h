@@ -9,7 +9,6 @@
 
 int numberOfConnections = 0;
 
-//void *server(void *pVoid);
 void generateInitBlock();
 int isLegalBlock(BLOCK_T *serverBlock);
 void checkAndUpdateBlockChainHead(mqd_t *newBlock_mq);
