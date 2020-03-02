@@ -2,7 +2,7 @@
 
 void main()
 {
-    mqd_t miners_mq[NUM_OF_MINER];
+    mqd_t miners_mq = malloc(NUM_OF_MINER * sizeof(mqd_t));
     struct mq_attr mq_connection_request_attr = {0};
     struct mq_attr mq_new_block_attr = {0};
     CONNECTION_REQUEST_MESSAGE req_msg;
@@ -46,6 +46,9 @@ void main()
             printf("Server: Received connection request from miner id %d, queue name %s\n", miner_id, miner_que_name);
 
             //free(rec_msg);
+            if(numberOfConnections >= NUM_OF_MINER){
+                reallocMinersMQ(&miners_mq, numberOfConnections + 1);
+            }
 
             miners_mq[numberOfConnections] = mq_open(miner_que_name, O_WRONLY);
 
@@ -74,6 +77,22 @@ void main()
 
         }
     }
+}
+
+int reallocMinersMQ(mqd_t ** minersMQ, int newSize){
+    mqd_t *temp = (mqd_t*)realloc(*mqd_t, (newSize * sizeof(mqd_t)));
+
+    if (temp == NULL)
+    {
+        printf("Cannot allocate more memory.\n");
+        return 0;
+    }
+    else
+    {
+        *minersMQ = temp;
+    }
+
+    return newSize;
 }
 
 void checkAndUpdateBlockChainHead(mqd_t *newBlock_mq)
