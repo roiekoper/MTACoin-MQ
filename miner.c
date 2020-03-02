@@ -48,7 +48,7 @@ void main(int argc, char **argv) {
 }
 
 void receivedBlockFromServer(int miner_id,
-                             struct mq_attr *mqMinertAttr,
+                             struct main::mq_attr *mqMinertAttr,
                              BLOCK_T *minerBlock,
                              int *isMinerBlockGenerate,
                              mqd_t *miner_mq) {
@@ -87,7 +87,7 @@ void generateMQ(const char *miner_que_name,
     printf("Miner %d sent connection request on %s\n", miner_id, miner_que_name);
 }
 
-void minerBlockGenerated(struct mq_attr *mqNewBlocktAttr,
+void minerBlockGenerated(struct main::mq_attr *mqNewBlocktAttr,
                          BLOCK_T *minerBlock,
                          int *isMinerBlockGenerate,
                          mqd_t *newBlock_mq) {
