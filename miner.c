@@ -66,20 +66,27 @@ void main(int argc, char **argv) {
             }
 
             if (isMinerBlockGenerate == 1) {
-                if (((minerBlock.hash & mask) == 0)) {
-                    printf("Miner %d: Mined a new block #%d, with the hash 0x%08x\n", minerBlock.relayed_by,
-                           minerBlock.height,
-                           (unsigned int) minerBlock.hash);
-                    sendBlock(&newBlock_mq, &minerBlock);
-
-                    mq_getattr(newBlock_mq, &mqNewBlocktAttr);
-
-                    isMinerBlockGenerate = 0;
-                } else {
-                    updateMinerBlock(&minerBlock);
-                }
+                minerBlockGenerated(&mqNewBlocktAttr, &minerBlock, &isMinerBlockGenerate, &newBlock_mq);
             }
         }
+    }
+}
+
+void minerBlockGenerated(struct mq_attr *mqNewBlocktAttr,
+                         BLOCK_T *minerBlock,
+                         int *isMinerBlockGenerate,
+                         mqd_t *newBlock_mq) {
+    if ((((*minerBlock).hash & mask) == 0)) {
+        printf("Miner %d: Mined a new block #%d, with the hash 0x%08x\n", (*minerBlock).relayed_by,
+               (*minerBlock).height,
+               (unsigned int) (*minerBlock).hash);
+        sendBlock(newBlock_mq, minerBlock);
+
+        mq_getattr((*newBlock_mq), mqNewBlocktAttr);
+
+        (*isMinerBlockGenerate) = 0;
+    } else {
+        updateMinerBlock(minerBlock);
     }
 }
 
