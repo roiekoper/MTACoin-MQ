@@ -47,7 +47,12 @@ void main()
 
             //free(rec_msg);
             if(numberOfConnections >= NUM_OF_MINER){
-                reallocMinersMQ(&miners_mq, numberOfConnections + 1);
+                int result = reallocMinersMQ(&miners_mq, numberOfConnections + 1);
+
+                if(result == 0){
+                    printf("Cannot reallocate memory for data\n");
+                    exit(1);
+                }
             }
 
             miners_mq[numberOfConnections] = mq_open(miner_que_name, O_WRONLY);
