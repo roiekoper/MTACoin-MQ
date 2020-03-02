@@ -9,6 +9,7 @@ void main(int argc, char **argv) {
     CONNECTION_REQUEST_MESSAGE connection_msg;
     int isMinerBlockGenerate = 0;
     mqd_t miner_mq;
+    mqd_t newBlock_mq;
     int miner_id;
 
     /* initialize the queue attributes */
