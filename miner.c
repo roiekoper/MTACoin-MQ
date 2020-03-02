@@ -1,8 +1,5 @@
 #include "miner.h"
 
-void receivedBlockFromServer(int miner_id, struct main::mq_attr *mqMinertAttr, BLOCK_T *minerBlock,
-                             int *isMinerBlockGenerate, mqd_t *miner_mq);
-
 void main(int argc, char **argv) {
     char miner_que_name[CHAR_SIZE] = "/miner_q_";
     struct mq_attr mqInitAttr = {0};

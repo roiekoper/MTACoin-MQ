@@ -14,4 +14,9 @@ void minerBlockGenerated(struct mq_attr *mqNewBlocktAttr,
                          BLOCK_T *minerBlock,
                          int *isMinerBlockGenerate,
                          mqd_t *newBlock_mq);
+void receivedBlockFromServer(int miner_id,
+                             struct mq_attr *mqMinertAttr,
+                             BLOCK_T *minerBlock,
+                             int *isMinerBlockGenerate,
+                             mqd_t *miner_mq);
 #endif //BITCOIN_MINER_H
