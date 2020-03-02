@@ -2,7 +2,7 @@
 
 void main()
 {
-    mqd_t miners_mq = malloc(NUM_OF_MINER * sizeof(mqd_t));
+    mqd_t *miners_mq = malloc(NUM_OF_MINER * sizeof(mqd_t));
     struct mq_attr mq_connection_request_attr = {0};
     struct mq_attr mq_new_block_attr = {0};
     CONNECTION_REQUEST_MESSAGE req_msg;
@@ -85,7 +85,7 @@ void main()
 }
 
 int reallocMinersMQ(mqd_t ** minersMQ, int newSize){
-    mqd_t *temp = (mqd_t*)realloc(*mqd_t, (newSize * sizeof(mqd_t)));
+    mqd_t *temp = (mqd_t*)realloc(*minersMQ, (newSize * sizeof(mqd_t)));
 
     if (temp == NULL)
     {
