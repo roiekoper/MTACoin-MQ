@@ -40,7 +40,6 @@ void main(int argc, char **argv) {
         /* Check if there is place in the Q, to send generated block to server */
         mq_getattr(newBlock_mq, &mqNewBlocktAttr);
 
-        //printf("I'm Miner\n");
         if (mqNewBlocktAttr.mq_curmsgs == MQ_MAX_SIZE) {
             printf("Queue(%d) reached max number of messages(%ld)\n", newBlock_mq, mqNewBlocktAttr.mq_maxmsg);
         } else {
@@ -57,24 +56,17 @@ void main(int argc, char **argv) {
                 }
 
                 if (isMinerBlockGenerate == 0 || (minerBlock.prev_hash != received_block->hash)) {
-                    //mq_getattr(miner_mq, &mqMinertAttr);
-                    //printf("Miner %d: after mq_receive: %ld\n", miner_id, mqMinertAttr.mq_curmsgs);
-                    //printf("Miner %d: Received message from server\n", miner_id);
                     printf("Miner %d received block: ", miner_id);
                     print_block(received_block);
                     generateMinerBlock(&minerBlock, received_block, miner_id); //get the new block
-                    //print_block(&minerBlock);
-                    //sleep(10);
                     isMinerBlockGenerate = 1;
                 }
                 free(received_block);
-                //printf("Miner %d: mqMinertAttr = %ld\n", miner_id, mqMinertAttr.mq_curmsgs);
 
             }
 
             if (isMinerBlockGenerate == 1) {
                 if (((minerBlock.hash & mask) == 0)) {
-                    //newBlock = minerBlock;
                     printf("Miner %d: Mined a new block #%d, with the hash 0x%08x\n", minerBlock.relayed_by,
                            minerBlock.height,
                            (unsigned int) minerBlock.hash);
@@ -82,9 +74,7 @@ void main(int argc, char **argv) {
 
                     mq_getattr(newBlock_mq, &mqNewBlocktAttr);
 
-                    isMinerBlockGenerate = 0;
-                    //printf("isMinerBlockGenerate is 0 \n");
-                    sleep(10);
+                    isMinerBlockGenerate = 0;Z
                 } else {
                     updateMinerBlock(&minerBlock);
                 }

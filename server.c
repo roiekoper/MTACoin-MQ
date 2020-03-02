@@ -15,7 +15,6 @@ void main()
     mq_new_block_attr.mq_maxmsg = MQ_MAX_SIZE;
     mq_new_block_attr.mq_msgsize = MQ_MAX_MSG_SIZE;
 
-    //printf("Server generate new block to chain\n");
     generateInitBlock();
 
     mq_unlink(MQ_CONNECTION_REQUEST_NAME); // delete first if already exists, this requires sudo privilege
@@ -31,7 +30,6 @@ void main()
     for (;;)
     {
         mq_getattr(connection_mq, &mqAttr);
-        //printf("Server connections mq message %ld\n", mqAttr.mq_curmsgs);
 
         while (mqAttr.mq_curmsgs > 0)
         {
@@ -57,7 +55,6 @@ void main()
 
             miners_mq[numberOfConnections] = mq_open(miner_que_name, O_WRONLY);
 
-            //print_block(blockToSend);
             sendBlock(&(miners_mq[numberOfConnections]), block_chain_head->block);
 
             mq_getattr(miners_mq[numberOfConnections], &mqAttr);
@@ -75,8 +72,6 @@ void main()
 
             for (int i = 0; i < numberOfConnections; i++)
             {
-                //mq_getattr(miners_mq[i], &mqAttr);
-                //printf("Server: size of miners_mq_%d: %ld\n", i, mqAttr.mq_curmsgs);
                 sendBlock(&(miners_mq[i]), block_chain_head->block);
             }
 
@@ -111,8 +106,6 @@ void checkAndUpdateBlockChainHead(mqd_t *newBlock_mq)
         push(&block_chain_head, minded_block, new_head);
         printf("Server: Added new block by miner %d: ", block_chain_head->block->relayed_by);
         print_block(block_chain_head->block);
-
-        //print_block_with_message(block_chain_head->block, "SERVER CHANGED HEAD WITH THIS BLOCK: ");
     }
     else
         free(minded_block);
