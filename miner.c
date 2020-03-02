@@ -74,7 +74,7 @@ void main(int argc, char **argv) {
 
                     mq_getattr(newBlock_mq, &mqNewBlocktAttr);
 
-                    isMinerBlockGenerate = 0;Z
+                    isMinerBlockGenerate = 0;
                 } else {
                     updateMinerBlock(&minerBlock);
                 }
