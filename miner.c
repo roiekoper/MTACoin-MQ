@@ -1,8 +1,5 @@
 #include "miner.h"
 
-void receivedBlockFromServer(int miner_id, struct main::mq_attr *mqMinertAttr, BLOCK_T *minerBlock,
-                             int *isMinerBlockGenerate, mqd_t *miner_mq);
-
 void main(int argc, char **argv) {
     char miner_que_name[CHAR_SIZE] = "/miner_q_";
     struct mq_attr mqInitAttr = {0};
@@ -50,7 +47,21 @@ void main(int argc, char **argv) {
 
             mq_getattr(miner_mq, &mqMinertAttr);
             if (mqMinertAttr.mq_curmsgs > 0) {
-                receivedBlockFromServer(miner_id, &mqMinertAttr, &minerBlock, &isMinerBlockGenerate, &miner_mq);
+                BLOCK_T *received_block = (BLOCK_T *) malloc(sizeof(BLOCK_T));
+
+                //Get the last MQ from server which is the latest block
+                while (mqMinertAttr.mq_curmsgs > 0) {
+                    receiveBlock(&miner_mq, received_block);
+                    mq_getattr(miner_mq, &mqMinertAttr);
+                }
+
+                if (isMinerBlockGenerate == 0 || (minerBlock.prev_hash != received_block->hash)) {
+                    printf("Miner %d received block: ", miner_id);
+                    print_block(received_block);
+                    generateMinerBlock(&minerBlock, received_block, miner_id); //get the new block
+                    isMinerBlockGenerate = 1;
+                }
+                free(received_block);
 
             }
 
@@ -59,27 +70,6 @@ void main(int argc, char **argv) {
             }
         }
     }
-}
-
-void receivedBlockFromServer(int miner_id,
-                             struct mq_attr *mqMinertAttr,
-                             BLOCK_T *minerBlock,
-                             int *isMinerBlockGenerate,
-                             mqd_t *miner_mq) {
-    BLOCK_T *received_block = (BLOCK_T *) malloc(sizeof(BLOCK_T));
-    //Get the last MQ from server which is the latest block
-    while ((*mqMinertAttr).mq_curmsgs > 0) {
-        receiveBlock(miner_mq, received_block);
-        mq_getattr((*miner_mq), mqMinertAttr);
-    }
-
-    if ((*isMinerBlockGenerate) == 0 || ((*minerBlock).prev_hash != received_block->hash)) {
-        printf("Miner %d received block: ", miner_id);
-        print_block(received_block);
-        generateMinerBlock(minerBlock, received_block, miner_id); //get the new block
-        (*isMinerBlockGenerate) = 1;
-    }
-    free(received_block);
 }
 
 void minerBlockGenerated(struct mq_attr *mqNewBlocktAttr,
