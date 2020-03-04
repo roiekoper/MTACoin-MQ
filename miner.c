@@ -32,6 +32,7 @@ void main(int argc, char **argv) {
     connection_msg.id = (unsigned int) miner_id;
     strcpy(connection_msg.que_name, miner_que_name);
 
+    // send connection request
     mq_send(connection_mq, (char *) &connection_msg, MQ_MAX_MSG_SIZE, 0);
     printf("Miner %d sent connection request on %s\n", miner_id, miner_que_name);
 
@@ -79,9 +80,9 @@ void minerBlockGenerated(struct mq_attr *mqNewBlocktAttr,
                          int *isMinerBlockGenerate,
                          mqd_t *newBlock_mq) {
     if ((((*minerBlock).hash & mask) == 0)) {
-        printf("Miner %d: Mined a new block #%d, with the hash 0x%08x\n", (*minerBlock).relayed_by,
+        printf("Miner %d: Mined a new block #%d, with the hash 0x%08x, difficulty %d\n", (*minerBlock).relayed_by,
                (*minerBlock).height,
-               (unsigned int) (*minerBlock).hash);
+               (unsigned int) (*minerBlock).hash, (*minerBlock).difficulty);
         sendBlock(newBlock_mq, minerBlock);
 
         mq_getattr((*newBlock_mq), mqNewBlocktAttr);

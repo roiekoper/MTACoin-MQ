@@ -58,16 +58,13 @@ void main()
             sendBlock(&(miners_mq[numberOfConnections]), block_chain_head->block);
 
             mq_getattr(miners_mq[numberOfConnections], &mqAttr);
-            printf("Server send massege to miner %d\n", miner_id);
 
             numberOfConnections++;
             mq_getattr(connection_mq, &mqAttr);
         }
-        //printf("I'm Server\n");
         mq_getattr(newBlock_mq, &mqAttr);
         if (mqAttr.mq_curmsgs > 0)
         {
-            //printf("Server get BLOCK message\n");
             checkAndUpdateBlockChainHead(&newBlock_mq);
 
             for (int i = 0; i < numberOfConnections; i++)
@@ -104,7 +101,7 @@ void checkAndUpdateBlockChainHead(mqd_t *newBlock_mq)
     {
         NODE_T *new_head = (NODE_T *)malloc(sizeof(NODE_T));
         push(&block_chain_head, minded_block, new_head);
-        printf("Server: Added new block by miner %d: ", block_chain_head->block->relayed_by);
+        printf("Server: Added new block by miner #%d: ", block_chain_head->block->relayed_by);
         print_block(block_chain_head->block);
     }
     else
