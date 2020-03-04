@@ -34,7 +34,6 @@ void main()
         while (mqAttr.mq_curmsgs > 0)
         {
 
-            //CONNECTION_REQUEST_MESSAGE *rec_msg = (CONNECTION_REQUEST_MESSAGE *)malloc(sizeof(CONNECTION_REQUEST_MESSAGE));
             mq_receive(connection_mq, (char *)&req_msg, MQ_MAX_MSG_SIZE, NULL);
 
             unsigned int miner_id = req_msg.id;
@@ -43,7 +42,6 @@ void main()
 
             printf("Server: Received connection request from miner id %d, queue name %s\n", miner_id, miner_que_name);
 
-            //free(rec_msg);
             if(numberOfConnections >= NUM_OF_MINER){
                 int result = reallocMinersMQ(&miners_mq, numberOfConnections + 1);
 
@@ -63,6 +61,7 @@ void main()
             mq_getattr(connection_mq, &mqAttr);
         }
         mq_getattr(newBlock_mq, &mqAttr);
+
         if (mqAttr.mq_curmsgs > 0)
         {
             checkAndUpdateBlockChainHead(&newBlock_mq);

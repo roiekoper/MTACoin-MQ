@@ -10,17 +10,12 @@ void main(int argc, char **argv) {
     int isMinerBlockGenerate = 0;
     int isFirstBlockFromServer = 1;
 
-    /* initialize the queue attributes */
+    // initialize the queue attributes
     mqInitAttr.mq_maxmsg = MQ_MAX_SIZE;
     mqInitAttr.mq_msgsize = MQ_MAX_MSG_SIZE;
 
-    // ----------------------
     // get miner id from args
-    int miner_id;
-    sscanf(argv[1], "%d", &miner_id);
-    strcat(miner_que_name, argv[1]);
-    printf("Miner id = %d, queue name = %s\n", miner_id, miner_que_name);
-    // ----------------------
+    int miner_id = createMinerQueueName(argv, miner_que_name);
 
     // generate all mqs
     mqd_t newBlock_mq = mq_open(MQ_NEW_BLOCK_NAME, O_WRONLY);
@@ -46,7 +41,6 @@ void main(int argc, char **argv) {
             printf("Queue(%d) reached max number of messages(%ld)\n", newBlock_mq, mqNewBlocktAttr.mq_maxmsg);
         } else {
             /* Check if server sent the latest block in chain */
-
             mq_getattr(miner_mq, &mqMinertAttr);
             if (mqMinertAttr.mq_curmsgs > 0) {
                 BLOCK_T *received_block = (BLOCK_T *) malloc(sizeof(BLOCK_T));
@@ -57,22 +51,30 @@ void main(int argc, char **argv) {
                     mq_getattr(miner_mq, &mqMinertAttr);
                 }
 
-                if (isMinerBlockGenerate == 0 || (minerBlock.prev_hash != received_block->hash)) {
+                if (!isMinerBlockGenerate || (minerBlock.prev_hash != received_block->hash)) {
                     printf("Miner %d received %s block: ", miner_id, isFirstBlockFromServer ? "first" : "");
                     print_block(received_block);
                     generateMinerBlock(&minerBlock, received_block, miner_id); //get the new block
                     isMinerBlockGenerate = 1;
                     isFirstBlockFromServer = 0;
                 }
-                free(received_block);
 
+                free(received_block);
             }
 
-            if (isMinerBlockGenerate == 1) {
+            if (isMinerBlockGenerate) {
                 minerBlockGenerated(&mqNewBlocktAttr, &minerBlock, &isMinerBlockGenerate, &newBlock_mq);
             }
         }
     }
+}
+
+int createMinerQueueName(char *const *argv, const char *miner_que_name) {
+    int miner_id;
+    sscanf(argv[1], "%d", &miner_id);
+    strcat(miner_que_name, argv[1]);
+    printf("Miner id = %d, queue name = %s\n", miner_id, miner_que_name);
+    return miner_id;
 }
 
 void minerBlockGenerated(struct mq_attr *mqNewBlocktAttr,

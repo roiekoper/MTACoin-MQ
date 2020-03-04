@@ -14,4 +14,6 @@ void minerBlockGenerated(struct mq_attr *mqNewBlocktAttr,
                          BLOCK_T *minerBlock,
                          int *isMinerBlockGenerate,
                          mqd_t *newBlock_mq);
+int createMinerQueueName(char *const *argv, const char *miner_que_name);
+
 #endif //BITCOIN_MINER_H
