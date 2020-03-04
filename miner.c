@@ -8,6 +8,7 @@ void main(int argc, char **argv) {
     BLOCK_T minerBlock;
     CONNECTION_REQUEST_MESSAGE connection_msg;
     int isMinerBlockGenerate = 0;
+    int isFirstBlockFromServer = 1;
 
     /* initialize the queue attributes */
     mqInitAttr.mq_maxmsg = MQ_MAX_SIZE;
@@ -56,10 +57,11 @@ void main(int argc, char **argv) {
                 }
 
                 if (isMinerBlockGenerate == 0 || (minerBlock.prev_hash != received_block->hash)) {
-                    printf("Miner %d received block: ", miner_id);
+                    printf("Miner %d received %s block: ", miner_id, isFirstBlockFromServer ? "First" : "");
                     print_block(received_block);
                     generateMinerBlock(&minerBlock, received_block, miner_id); //get the new block
                     isMinerBlockGenerate = 1;
+                    isFirstBlockFromServer = 0;
                 }
                 free(received_block);
 
