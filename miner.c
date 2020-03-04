@@ -58,7 +58,7 @@ void main(int argc, char **argv) {
                 }
 
                 if (isMinerBlockGenerate == 0 || (minerBlock.prev_hash != received_block->hash)) {
-                    printf("Miner %d received %s block: ", miner_id, isFirstBlockFromServer ? "First" : "");
+                    printf("Miner %d received %s block: ", miner_id, isFirstBlockFromServer ? "first" : "");
                     print_block(received_block);
                     generateMinerBlock(&minerBlock, received_block, miner_id); //get the new block
                     isMinerBlockGenerate = 1;
